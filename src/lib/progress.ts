@@ -42,6 +42,13 @@ export function toggleComplete(key: string) {
   persist();
 }
 
+/** Wipe all lesson-completion markers (used by the reset-progress control). */
+export function clearAllProgress() {
+  if (completed.size === 0) return;
+  completed = new Set();
+  persist();
+}
+
 function subscribe(cb: () => void): () => void {
   listeners.add(cb);
   return () => listeners.delete(cb);

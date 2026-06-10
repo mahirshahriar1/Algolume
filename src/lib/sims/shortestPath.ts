@@ -131,11 +131,14 @@ export function generateGraph(
     const w = 2 + ((i * 3 + seed) % 7);
     push(i, i + 1, w);
   }
-  // A few extra "shortcut" edges add interesting relaxations.
-  for (let i = 0; i < n; i++) {
-    const to = (i + 2 + seed) % n;
+  // A few extra "shortcut" edges add interesting relaxations — kept to ~n/2 so
+  // weight labels stay readable on the small circle.
+  const shortcuts = Math.max(1, Math.floor(n / 2));
+  for (let k = 0; k < shortcuts; k++) {
+    const i = (k * 2 + seed) % n;
+    const to = (i + 2) % n;
     const base = 1 + ((i * 5 + seed * 2) % 9);
-    const w = opts.negative && i % 3 === 1 ? -(1 + (i % 4)) : base;
+    const w = opts.negative && k % 2 === 1 ? -(1 + (k % 4)) : base;
     push(i, to, w);
   }
   push(n - 1, 0, opts.negative ? -2 : 4);

@@ -9,22 +9,26 @@
    * and buttons stay vivid and high-contrast in both.
    */
   :root {
-    /* Light = warm "paper" — editorial handbook feel, soft on the eyes. */
-    --base: 233 230 222; /* warm paper background */
-    --surface: 252 251 247; /* warm white cards */
-    --elevated: 244 242 234; /* raised controls */
-    --line: 222 218 207; /* warm border */
-    --fg: 26 24 21; /* warm near-black text */
-    --muted: 74 71 64; /* secondary text */
-    --subtle: 122 118 108; /* tertiary text */
-    --run: 21 128 61; /* green-700 */
-    --compare: 2 132 199; /* sky-600 */
-    --pivot: 217 119 6; /* amber-600 */
-    --swap: 225 70 60; /* warm coral-red */
-    --visited: 124 58 237; /* violet-600 */
-    --bar: 168 162 150; /* unsorted bar — warm gray */
-    --card-shadow: 38 32 22; /* hard paper shadow */
-    --card-shadow-alpha: 0.13;
+    /* Light = "Soft Slate" — a calm, soothing scheme. Gentle blue-grey paper,
+     * softly-tinted cards, a distinct recessed code surface, soft (not harsh)
+     * borders and shadow, and slightly muted, comfortable accents. Layered and
+     * low-glare rather than bright-white or heavily darkened. */
+    --base: 215 222 232; /* gentle blue-grey paper */
+    --surface: 232 236 243; /* softly-tinted card (a calm lift, not white) */
+    --elevated: 222 228 237; /* raised controls */
+    --code: 207 215 227; /* recessed, calm code/editor surface */
+    --line: 152 165 187; /* soft slate border (visible, not harsh) */
+    --fg: 38 46 61; /* soft dark ink — comfortable, not pure black */
+    --muted: 78 88 106; /* secondary text */
+    --subtle: 116 127 147; /* tertiary text */
+    --run: 25 145 78; /* green */
+    --compare: 45 104 200; /* blue */
+    --pivot: 214 116 44; /* orange */
+    --swap: 214 84 84; /* soft red */
+    --visited: 132 78 196; /* muted purple */
+    --bar: 178 189 206; /* unsorted bar — cool grey-blue */
+    --card-shadow: 45 56 78; /* soft slate shadow */
+    --card-shadow-alpha: 0.14; /* gentle lift, not a hard brutalist slab */
     color-scheme: light;
   }
 
@@ -32,6 +36,7 @@
     --base: 13 14 18; /* warm-leaning near-black */
     --surface: 23 24 30; /* card */
     --elevated: 33 35 43; /* raised controls */
+    --code: 18 19 25; /* recessed code/editor surface */
     --line: 52 54 64; /* border */
     --fg: 240 239 235; /* warm off-white text */
     --muted: 161 159 152; /* secondary text */

@@ -5,6 +5,11 @@ import { EmbeddedSort } from "./EmbeddedSort";
 import { GridPreview } from "@/components/LandingPreviews";
 import { SeqSim } from "@/components/sim/SeqSim";
 import { TreeSim } from "@/components/sim/TreeSim";
+import { HeapSim } from "@/components/sim/HeapSim";
+import { DpSim } from "@/components/sim/DpSim";
+import type { DpMode } from "@/lib/sims/dp";
+import { BitsSim } from "@/components/sim/BitsSim";
+import type { BitOp } from "@/lib/sims/bits";
 import { HashSim } from "@/components/sim/HashSim";
 import { RecursionSim } from "@/components/sim/RecursionSim";
 import { ShortestPathSim } from "@/components/sim/ShortestPathSim";
@@ -37,6 +42,9 @@ function Body({
   if (module === "bst" || module === "traversal")
     return <TreeSim variant={variant ?? (module === "traversal" ? "inorder" : "insert")} />;
   if (module === "hash") return <HashSim />;
+  if (module === "heap") return <HeapSim />;
+  if (module === "dp") return <DpSim variant={(variant as DpMode) ?? "coin"} />;
+  if (module === "bits") return <BitsSim variant={(variant as BitOp) ?? "and"} />;
   if (module === "dsu") return <DsuSim />;
   if (module === "bellman-ford") return <ShortestPathSim variant="bellman-ford" />;
   if (module === "floyd-warshall") return <ShortestPathSim variant="floyd-warshall" />;

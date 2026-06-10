@@ -16,9 +16,9 @@ interface ForestLayout {
 
 const VIEW_W = 120;
 const PAD_X = 8;
-const TOP_Y = 16;
-const LEVEL_GAP = 19;
-const ROOT_GAP_UNITS = 0.55;
+const TOP_Y = 22;
+const LEVEL_GAP = 23;
+const ROOT_GAP_UNITS = 0.7;
 
 export function DsuCanvas({ frame }: { frame: DsuFrame | undefined }) {
   if (!frame) return null;
@@ -49,27 +49,18 @@ export function DsuCanvas({ frame }: { frame: DsuFrame | undefined }) {
         {layout.roots.map((root) => {
           const pt = layout.nodes.get(root);
           if (!pt) return null;
+          // Single label above the root ring (r≈11.2) so it never overlaps it.
           return (
-            <g key={`root-label-${root}`}>
-              <text
-                x={pt.x}
-                y={pt.y - 10.5}
-                textAnchor="middle"
-                className="fill-run font-mono font-semibold"
-                style={{ fontSize: 3.5 }}
-              >
-                root {root}
-              </text>
-              <text
-                x={pt.x}
-                y={pt.y - 6}
-                textAnchor="middle"
-                className="fill-subtle font-mono"
-                style={{ fontSize: 3 }}
-              >
-                size {frame.size[root]}
-              </text>
-            </g>
+            <text
+              key={`root-label-${root}`}
+              x={pt.x}
+              y={pt.y - 14}
+              textAnchor="middle"
+              className="fill-run font-mono font-semibold"
+              style={{ fontSize: 3.4 }}
+            >
+              root · size {frame.size[root]}
+            </text>
           );
         })}
 
@@ -105,7 +96,6 @@ export function DsuCanvas({ frame }: { frame: DsuFrame | undefined }) {
           const active = frame.active.includes(node);
           const inPath = frame.path.includes(node);
           const compressed = frame.compressed.includes(node);
-          const childCount = layout.children[node]?.length ?? 0;
 
           return (
             <g key={node}>
@@ -138,16 +128,6 @@ export function DsuCanvas({ frame }: { frame: DsuFrame | undefined }) {
               >
                 {node}
               </text>
-              {!root && (
-                <text x={pt.x} y={pt.y + 12.3} textAnchor="middle" className="fill-muted font-mono" style={{ fontSize: 3.2 }}>
-                  p={parent}
-                </text>
-              )}
-              {root && childCount > 0 && (
-                <text x={pt.x} y={pt.y + 12.3} textAnchor="middle" className="fill-run font-mono" style={{ fontSize: 3.2 }}>
-                  {childCount} child{childCount === 1 ? "" : "ren"}
-                </text>
-              )}
             </g>
           );
         })}

@@ -15,6 +15,7 @@ export default {
         base: token("base"), // page background
         surface: token("surface"), // panels / cards
         elevated: token("elevated"), // raised controls
+        code: token("code"), // code / editor surface (calm, distinct from cards)
         line: token("line"), // borders / dividers
         // Text
         fg: token("fg"), // primary text

@@ -1,4 +1,4 @@
-import { callout, chapter, derive, heading, lesson, prose, step, viz } from "../builder";
+import { callout, chapter, derive, heading, lesson, problem, prose, step, viz } from "../builder";
 
 export const trees = chapter(
   "trees",
@@ -94,6 +94,9 @@ export const trees = chapter(
           "note",
           "That failure mode is why **self-balancing** trees (AVL, red-black) exist: they rotate on insert/delete to keep the height near `log n`, guaranteeing `O(log n)`.",
         ),
+        problem("bst-search-path"),
+        problem("kth-smallest-bst"),
+        problem("lca-bst"),
       ],
     ),
     lesson(

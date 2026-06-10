@@ -178,14 +178,14 @@ export function ChallengePreview() {
     <div className="flex h-full flex-col">
       <PreviewBar label="two_sum — challenge" />
       <div className="space-y-3 p-4">
-        <div className="rounded-lg border border-line bg-elevated/60 p-3">
-          <p className="font-display text-base font-semibold">Two Sum</p>
+        <div className="rounded-lg border border-line bg-elevated p-3">
+          <p className="font-display text-[15px] font-semibold text-fg">Two Sum</p>
           <p className="mt-1 text-xs text-muted">
             Return the indices of the two numbers that add up to{" "}
             <span className="font-mono text-fg">target</span>.
           </p>
         </div>
-        <pre className="overflow-hidden rounded-lg border border-line bg-surface px-3 py-2.5 font-mono text-[12px] leading-relaxed text-muted">
+        <pre className="overflow-hidden rounded-lg border border-line bg-code px-3 py-2.5 font-mono text-[12px] leading-relaxed text-muted">
           <code>
             <span className="text-visited">def</span>{" "}
             <span className="text-compare">two_sum</span>(nums, target):

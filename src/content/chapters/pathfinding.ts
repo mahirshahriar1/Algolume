@@ -1,4 +1,4 @@
-import { callout, chapter, derive, heading, lesson, prose, step, viz } from "../builder";
+import { callout, chapter, derive, heading, lesson, problem, prose, step, viz } from "../builder";
 
 export const pathfinding = chapter(
   "pathfinding",
@@ -70,6 +70,9 @@ export const pathfinding = chapter(
           "note",
           "The visualizer offers both a **grid** and a **node-graph** view. The grid is intuitive; the graph view shows the same algorithms on an arbitrary weighted network — which is what they're really built for.",
         ),
+        problem("number-of-islands"),
+        problem("shortest-grid-path"),
+        problem("rotting-oranges"),
       ],
     ),
     lesson(

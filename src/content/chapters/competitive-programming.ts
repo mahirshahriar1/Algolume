@@ -244,6 +244,17 @@ export const competitiveProgramming = chapter(
         prose(
           "- [NSUPS Blogs & Articles](https://nsups.org/blogs): North South University's problem solver's community writing on getting started, bit manipulation, number theory, graphs, and contest practice.\n- [cp-algorithms](https://cp-algorithms.com/index.html): a dense reference for algorithms used in contests, including number theory, DP, strings, graphs, geometry, and data structures.\n- [USACO Guide CP resources](https://usaco.guide/general/resources-cp): curated practice sites, books, learning paths, and reference material for competitive programming.\n- [Forthright48 CPPS 101](https://forthright48.com/p-cpps-101/): a topic roadmap with many number theory, combinatorics, and contest-analysis notes.\n- [GeeksforGeeks `std::vector`](https://www.geeksforgeeks.org/vector-in-cpp-stl/) and [`std::string`](https://www.geeksforgeeks.org/stdstring-class-in-c/): quick refreshers for C++ library types.\n- [GeeksforGeeks `ArrayList`](https://www.geeksforgeeks.org/arraylist-in-java/) and [`StringBuilder`](https://www.geeksforgeeks.org/stringbuilder-class-in-java-with-examples/): Java equivalents for dynamic arrays and efficient mutable strings.",
         ),
+        divider(),
+        heading("Online judges to practice on"),
+        prose(
+          "Pick one judge, make an account, and start with the easiest problems. The skill transfers — the platforms differ mostly in contest format and community.",
+        ),
+        prose(
+          "- [Codeforces](https://codeforces.com/): the largest competitive site. Frequent **rated rounds** (Div. 1–4), an enormous problemset with editorials, a rating system, and the **Edu** section. Start at problem rating ~800 and climb.\n- [AtCoder](https://atcoder.jp/): clean, well-tested problems and beginner-friendly weekly **ABC** (Beginner) and **ARC** (Regular) contests. Excellent editorials; great for a structured ramp.\n- [CodeChef](https://www.codechef.com/): monthly **Starters**/long/cook-off contests and a large practice archive with difficulty ratings and a learning path.",
+        ),
+        prose(
+          "Topic-specific practice sets live in their own chapters — e.g. the [Dynamic programming](/learn/dynamic-programming/dp-1d) chapter links the classic AtCoder EDPC set.",
+        ),
       ],
     ),
     lesson(

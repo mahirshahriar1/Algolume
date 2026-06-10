@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Check, Circle, Clock, List, MonitorPlay, NotebookPen } from "lucide-react";
 import { CHAPTERS, adjacentLessons, getLesson } from "@/content";
 import { BlockRenderer } from "@/components/lesson/BlockRenderer";
+import { CopyButton } from "@/components/CopyButton";
 import { LessonNotes } from "@/components/lesson/LessonNotes";
 import { lessonKey, toggleComplete, useCompleted } from "@/lib/progress";
 import { slugify } from "@/lib/slug";
@@ -23,8 +24,13 @@ const VIZ_LINKS: Record<string, { to: string; label: string }> = {
   bst: { to: "/visualizers/trees", label: "Trees visualizer" },
   "red-black-tree": { to: "/visualizers/trees", label: "Trees visualizer" },
   traversal: { to: "/visualizers/traversals", label: "Traversal visualizer" },
-  "bellman-ford": { to: "/visualizers/shortest-paths", label: "Shortest paths visualizer" },
-  "floyd-warshall": { to: "/visualizers/shortest-paths", label: "Shortest paths visualizer" },
+  "bellman-ford": { to: "/visualizers/shortest-paths", label: "Graph lab · shortest paths" },
+  "floyd-warshall": { to: "/visualizers/shortest-paths", label: "Graph lab · shortest paths" },
+  mst: { to: "/visualizers/mst", label: "Graph lab · spanning tree" },
+  dsu: { to: "/visualizers/dsu", label: "Graph lab · union-find" },
+  heap: { to: "/visualizers/heap", label: "Heap visualizer" },
+  dp: { to: "/visualizers/dp", label: "DP table visualizer" },
+  bits: { to: "/visualizers/bits", label: "Bit manipulation visualizer" },
   recursion: { to: "/visualizers/recursion", label: "Recursion visualizer" },
   "recursion-tree": { to: "/visualizers/recursion", label: "Recursion visualizer" },
   backtracking: { to: "/visualizers/recursion", label: "Recursion visualizer" },
@@ -41,7 +47,11 @@ const CHAPTER_VIZ: Record<string, { to: string; label: string }> = {
   hashing: { to: "/visualizers/hash", label: "Hash table visualizer" },
   trees: { to: "/visualizers/trees", label: "Trees visualizer" },
   traversals: { to: "/visualizers/traversals", label: "Traversal visualizer" },
+  heaps: { to: "/visualizers/heap", label: "Heap visualizer" },
+  "dynamic-programming": { to: "/visualizers/dp", label: "DP table visualizer" },
+  "bit-manipulation": { to: "/visualizers/bits", label: "Bit manipulation visualizer" },
   pathfinding: { to: "/pathfinding", label: "Pathfinding visualizer" },
+  "minimum-spanning-trees": { to: "/visualizers/mst", label: "Graph algorithms lab" },
 };
 
 export function LessonPage() {
@@ -49,10 +59,23 @@ export function LessonPage() {
   const ref = getLesson(chapterId, lessonId);
   const completed = useCompleted();
   const [progress, setProgress] = useState(0);
+  const spineRef = useRef<HTMLDivElement>(null);
+  const activeLessonRef = useRef<HTMLAnchorElement>(null);
 
   // Scroll to top on lesson change + track reading progress.
   useEffect(() => {
     window.scrollTo(0, 0);
+  }, [chapterId, lessonId]);
+
+  // Slide the chapter spine so the current lesson is centered in view, without
+  // scrolling the whole page.
+  useEffect(() => {
+    const container = spineRef.current;
+    const active = activeLessonRef.current;
+    if (!container || !active) return;
+    const c = container.getBoundingClientRect();
+    const a = active.getBoundingClientRect();
+    container.scrollTop += a.top - c.top - (container.clientHeight / 2 - a.height / 2);
   }, [chapterId, lessonId]);
 
   useEffect(() => {
@@ -114,7 +137,7 @@ export function LessonPage() {
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[220px_minmax(0,1fr)_230px]">
         {/* Left: the book's spine */}
         <aside className="hidden lg:block">
-          <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-auto pr-2">
+          <div ref={spineRef} className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-auto pr-2">
             <Link
               to="/learn"
               className="mb-4 flex items-center gap-1.5 text-xs font-medium text-muted hover:text-fg"
@@ -134,6 +157,7 @@ export function LessonPage() {
                     return (
                       <li key={l.id}>
                         <Link
+                          ref={active ? activeLessonRef : undefined}
                           to={`/learn/${c.id}/${l.id}`}
                           className={cn(
                             "-ml-px flex items-center gap-2 border-l-2 py-1 pl-3 text-sm transition-colors",
@@ -181,6 +205,8 @@ export function LessonPage() {
               <Clock className="h-3.5 w-3.5" />
               {lesson.estMinutes} min read
             </span>
+            <span className="h-3 w-px bg-line" />
+            <CopyButton text={typeof window !== "undefined" ? window.location.href : ""} label="Copy link" />
           </div>
 
           <hr className="my-8 border-line" />

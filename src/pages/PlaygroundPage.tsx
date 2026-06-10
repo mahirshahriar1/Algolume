@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Play, Loader2, Terminal, Code2, RotateCcw } from "lucide-react";
 import { CodeEditor } from "@/components/CodeEditor";
 import { usePyodide, type RunResult } from "@/lib/usePyodide";
@@ -61,12 +61,30 @@ for i in range(10):
   },
 ];
 
+const STORAGE_KEY = "algolume-playground-code";
+
 export function PlaygroundPage() {
   const { status, run } = usePyodide();
-  const [code, setCode] = useState(EXAMPLES[0].code);
+  // Restore the last edited snippet across reloads.
+  const [code, setCode] = useState(() => {
+    try {
+      return localStorage.getItem(STORAGE_KEY) ?? EXAMPLES[0].code;
+    } catch {
+      return EXAMPLES[0].code;
+    }
+  });
   const [active, setActive] = useState(0);
   const [result, setResult] = useState<RunResult | null>(null);
   const [running, setRunning] = useState(false);
+
+  // Persist on change (debounced via the browser's own write coalescing).
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, code);
+    } catch {
+      /* ignore quota/availability */
+    }
+  }, [code]);
 
   const loadExample = (i: number) => {
     setActive(i);

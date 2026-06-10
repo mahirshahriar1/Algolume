@@ -429,4 +429,501 @@ export const CPP_SNIPPETS: Record<string, CppSnippet> = {
 }
 `,
   },
+  "merge-two-sorted": {
+    cppSolution: `vector<int> merge_sorted(vector<int> a, vector<int> b) {
+    vector<int> out;
+    int i = 0, j = 0;
+    while (i < (int)a.size() && j < (int)b.size()) {
+        if (a[i] <= b[j]) out.push_back(a[i++]);
+        else              out.push_back(b[j++]);
+    }
+    while (i < (int)a.size()) out.push_back(a[i++]);
+    while (j < (int)b.size()) out.push_back(b[j++]);
+    return out;
+}
+`,
+  },
+  "kth-largest": {
+    cppSolution: `int find_kth_largest(vector<int> nums, int k) {
+    // nth_element puts the k-th largest at its sorted position in O(n) average.
+    nth_element(nums.begin(), nums.begin() + (k - 1), nums.end(), greater<int>());
+    return nums[k - 1];
+}
+`,
+  },
+  "count-inversions": {
+    cppSolution: `long long count_inversions(vector<int> nums) {
+    // Merge sort, counting cross-inversions during each merge.
+    function<long long(int,int)> solve = [&](int lo, int hi) -> long long {
+        if (hi - lo <= 1) return 0;
+        int mid = (lo + hi) / 2;
+        long long inv = solve(lo, mid) + solve(mid, hi);
+        vector<int> merged;
+        int i = lo, j = mid;
+        while (i < mid && j < hi) {
+            if (nums[i] <= nums[j]) merged.push_back(nums[i++]);
+            else { merged.push_back(nums[j++]); inv += mid - i; }
+        }
+        while (i < mid) merged.push_back(nums[i++]);
+        while (j < hi) merged.push_back(nums[j++]);
+        copy(merged.begin(), merged.end(), nums.begin() + lo);
+        return inv;
+    };
+    return solve(0, nums.size());
+}
+`,
+  },
+  "bst-search-path": {
+    cppSolution: `struct Node { int v; Node *l = nullptr, *r = nullptr; Node(int x):v(x){} };
+
+vector<int> bst_search_path(vector<int> values, int target) {
+    Node* root = nullptr;
+    for (int v : values) {
+        if (!root) { root = new Node(v); continue; }
+        Node* cur = root;
+        while (true) {
+            if (v < cur->v) { if (!cur->l) { cur->l = new Node(v); break; } cur = cur->l; }
+            else if (v > cur->v) { if (!cur->r) { cur->r = new Node(v); break; } cur = cur->r; }
+            else break;
+        }
+    }
+    vector<int> path;
+    for (Node* cur = root; cur; ) {
+        path.push_back(cur->v);
+        if (target == cur->v) break;
+        cur = target < cur->v ? cur->l : cur->r;
+    }
+    return path;
+}
+`,
+  },
+  "kth-smallest-bst": {
+    cppSolution: `struct Node { int v; Node *l = nullptr, *r = nullptr; Node(int x):v(x){} };
+
+int kth_smallest_bst(vector<int> values, int k) {
+    Node* root = nullptr;
+    for (int v : values) {
+        if (!root) { root = new Node(v); continue; }
+        Node* cur = root;
+        while (true) {
+            if (v < cur->v) { if (!cur->l) { cur->l = new Node(v); break; } cur = cur->l; }
+            else if (v > cur->v) { if (!cur->r) { cur->r = new Node(v); break; } cur = cur->r; }
+            else break;
+        }
+    }
+    vector<int> out;
+    function<void(Node*)> in = [&](Node* n) {
+        if (!n) return;
+        in(n->l); out.push_back(n->v); in(n->r);
+    };
+    in(root);
+    return out[k - 1];
+}
+`,
+  },
+  "lca-bst": {
+    cppSolution: `struct Node { int v; Node *l = nullptr, *r = nullptr; Node(int x):v(x){} };
+
+int lca_bst(vector<int> values, int a, int b) {
+    Node* root = nullptr;
+    for (int v : values) {
+        if (!root) { root = new Node(v); continue; }
+        Node* cur = root;
+        while (true) {
+            if (v < cur->v) { if (!cur->l) { cur->l = new Node(v); break; } cur = cur->l; }
+            else if (v > cur->v) { if (!cur->r) { cur->r = new Node(v); break; } cur = cur->r; }
+            else break;
+        }
+    }
+    Node* cur = root;
+    while (cur) {
+        if (a < cur->v && b < cur->v) cur = cur->l;
+        else if (a > cur->v && b > cur->v) cur = cur->r;
+        else return cur->v;
+    }
+    return -1;
+}
+`,
+  },
+  "inorder-traversal": {
+    cppSolution: `// Tree given level-order with nulls; here as a vector<optional<int>>.
+struct TreeNode { int val; TreeNode *left = nullptr, *right = nullptr; TreeNode(int v):val(v){} };
+
+TreeNode* build(const vector<optional<int>>& a) {
+    if (a.empty() || !a[0]) return nullptr;
+    TreeNode* root = new TreeNode(*a[0]);
+    queue<TreeNode*> q; q.push(root);
+    size_t i = 1;
+    while (i < a.size()) {
+        TreeNode* n = q.front(); q.pop();
+        if (i < a.size()) { if (a[i]) { n->left = new TreeNode(*a[i]); q.push(n->left); } i++; }
+        if (i < a.size()) { if (a[i]) { n->right = new TreeNode(*a[i]); q.push(n->right); } i++; }
+    }
+    return root;
+}
+
+vector<int> inorder(vector<optional<int>> arr) {
+    vector<int> out;
+    function<void(TreeNode*)> go = [&](TreeNode* n) {
+        if (!n) return;
+        go(n->left); out.push_back(n->val); go(n->right);
+    };
+    go(build(arr));
+    return out;
+}
+`,
+  },
+  "level-order-traversal": {
+    cppSolution: `struct TreeNode { int val; TreeNode *left = nullptr, *right = nullptr; TreeNode(int v):val(v){} };
+// (build() as in Inorder Traversal)
+
+vector<vector<int>> level_order(TreeNode* root) {
+    vector<vector<int>> res;
+    if (!root) return res;
+    queue<TreeNode*> q; q.push(root);
+    while (!q.empty()) {
+        int sz = q.size();
+        vector<int> level;
+        for (int i = 0; i < sz; i++) {
+            TreeNode* n = q.front(); q.pop();
+            level.push_back(n->val);
+            if (n->left) q.push(n->left);
+            if (n->right) q.push(n->right);
+        }
+        res.push_back(level);
+    }
+    return res;
+}
+`,
+  },
+  "zigzag-traversal": {
+    cppSolution: `struct TreeNode { int val; TreeNode *left = nullptr, *right = nullptr; TreeNode(int v):val(v){} };
+// (build() as in Inorder Traversal)
+
+vector<vector<int>> zigzag(TreeNode* root) {
+    vector<vector<int>> res;
+    if (!root) return res;
+    queue<TreeNode*> q; q.push(root);
+    bool ltr = true;
+    while (!q.empty()) {
+        int sz = q.size();
+        vector<int> level(sz);
+        for (int i = 0; i < sz; i++) {
+            TreeNode* n = q.front(); q.pop();
+            int idx = ltr ? i : sz - 1 - i;
+            level[idx] = n->val;
+            if (n->left) q.push(n->left);
+            if (n->right) q.push(n->right);
+        }
+        res.push_back(level);
+        ltr = !ltr;
+    }
+    return res;
+}
+`,
+  },
+  "reverse-linked-list": {
+    cppSolution: `vector<int> reverse_list(vector<int> vals) {
+    // With real nodes: rewire each next pointer to prev as you walk.
+    reverse(vals.begin(), vals.end());
+    return vals;
+}
+`,
+  },
+  "remove-nth-from-end": {
+    cppSolution: `vector<int> remove_nth_from_end(vector<int> vals, int n) {
+    vals.erase(vals.begin() + (int)vals.size() - n);
+    return vals;
+}
+`,
+  },
+  "add-two-numbers": {
+    cppSolution: `vector<int> add_two_numbers(vector<int> a, vector<int> b) {
+    vector<int> res;
+    int carry = 0;
+    for (size_t i = 0; i < a.size() || i < b.size() || carry; i++) {
+        int s = carry + (i < a.size() ? a[i] : 0) + (i < b.size() ? b[i] : 0);
+        res.push_back(s % 10);
+        carry = s / 10;
+    }
+    return res;
+}
+`,
+  },
+  "number-of-islands": {
+    cppSolution: `int num_islands(vector<vector<int>> grid) {
+    if (grid.empty()) return 0;
+    int R = grid.size(), C = grid[0].size(), count = 0;
+    int dx[] = {1, -1, 0, 0}, dy[] = {0, 0, 1, -1};
+    for (int i = 0; i < R; i++)
+        for (int j = 0; j < C; j++)
+            if (grid[i][j] == 1) {
+                count++;
+                queue<pair<int,int>> q; q.push({i, j}); grid[i][j] = 0;
+                while (!q.empty()) {
+                    auto [x, y] = q.front(); q.pop();
+                    for (int d = 0; d < 4; d++) {
+                        int nx = x + dx[d], ny = y + dy[d];
+                        if (nx >= 0 && nx < R && ny >= 0 && ny < C && grid[nx][ny] == 1) {
+                            grid[nx][ny] = 0; q.push({nx, ny});
+                        }
+                    }
+                }
+            }
+    return count;
+}
+`,
+  },
+  "shortest-grid-path": {
+    cppSolution: `int shortest_grid_path(vector<vector<int>> grid) {
+    if (grid.empty() || grid[0][0] == 1) return -1;
+    int R = grid.size(), C = grid[0].size();
+    if (grid[R-1][C-1] == 1) return -1;
+    int dx[] = {1, -1, 0, 0}, dy[] = {0, 0, 1, -1};
+    queue<tuple<int,int,int>> q; q.push({0, 0, 1});
+    vector<vector<bool>> seen(R, vector<bool>(C, false)); seen[0][0] = true;
+    while (!q.empty()) {
+        auto [x, y, d] = q.front(); q.pop();
+        if (x == R-1 && y == C-1) return d;
+        for (int k = 0; k < 4; k++) {
+            int nx = x + dx[k], ny = y + dy[k];
+            if (nx >= 0 && nx < R && ny >= 0 && ny < C && grid[nx][ny] == 0 && !seen[nx][ny]) {
+                seen[nx][ny] = true; q.push({nx, ny, d + 1});
+            }
+        }
+    }
+    return -1;
+}
+`,
+  },
+  "rotting-oranges": {
+    cppSolution: `int oranges_rotting(vector<vector<int>> grid) {
+    int R = grid.size(), C = grid[0].size(), fresh = 0, t = 0;
+    int dx[] = {1, -1, 0, 0}, dy[] = {0, 0, 1, -1};
+    queue<tuple<int,int,int>> q;
+    for (int i = 0; i < R; i++)
+        for (int j = 0; j < C; j++) {
+            if (grid[i][j] == 2) q.push({i, j, 0});
+            else if (grid[i][j] == 1) fresh++;
+        }
+    while (!q.empty()) {
+        auto [x, y, tt] = q.front(); q.pop(); t = tt;
+        for (int k = 0; k < 4; k++) {
+            int nx = x + dx[k], ny = y + dy[k];
+            if (nx >= 0 && nx < R && ny >= 0 && ny < C && grid[nx][ny] == 1) {
+                grid[nx][ny] = 2; fresh--; q.push({nx, ny, tt + 1});
+            }
+        }
+    }
+    return fresh > 0 ? -1 : t;
+}
+`,
+  },
+  "valid-palindrome": {
+    cppSolution: `bool is_palindrome(string s) {
+    int i = 0, j = (int)s.size() - 1;
+    auto ok = [](char c) { return isalnum((unsigned char)c); };
+    while (i < j) {
+        while (i < j && !ok(s[i])) i++;
+        while (i < j && !ok(s[j])) j--;
+        if (tolower(s[i]) != tolower(s[j])) return false;
+        i++; j--;
+    }
+    return true;
+}
+`,
+  },
+  "longest-substring-no-repeat": {
+    cppSolution: `int length_of_longest_substring(string s) {
+    vector<int> last(256, -1);
+    int start = 0, best = 0;
+    for (int i = 0; i < (int)s.size(); i++) {
+        if (last[(unsigned char)s[i]] >= start)
+            start = last[(unsigned char)s[i]] + 1;
+        last[(unsigned char)s[i]] = i;
+        best = max(best, i - start + 1);
+    }
+    return best;
+}
+`,
+  },
+  "group-anagrams": {
+    cppSolution: `vector<vector<string>> group_anagrams(vector<string> strs) {
+    map<string, vector<string>> groups;
+    for (auto& w : strs) {
+        string key = w;
+        sort(key.begin(), key.end());
+        groups[key].push_back(w);
+    }
+    vector<vector<string>> res;
+    for (auto& [k, g] : groups) {
+        sort(g.begin(), g.end());
+        res.push_back(g);
+    }
+    return res;
+}
+`,
+  },
+  "last-stone-weight": {
+    cppSolution: `int last_stone_weight(vector<int> stones) {
+    priority_queue<int> pq(stones.begin(), stones.end()); // max-heap
+    while (pq.size() > 1) {
+        int x = pq.top(); pq.pop();
+        int y = pq.top(); pq.pop();
+        if (x != y) pq.push(x - y);
+    }
+    return pq.empty() ? 0 : pq.top();
+}
+`,
+  },
+  "k-smallest": {
+    cppSolution: `vector<int> k_smallest(vector<int> nums, int k) {
+    nth_element(nums.begin(), nums.begin() + k, nums.end());
+    vector<int> res(nums.begin(), nums.begin() + k);
+    sort(res.begin(), res.end());
+    return res;
+}
+`,
+  },
+  "merge-k-sorted": {
+    cppSolution: `vector<int> merge_k_sorted(vector<vector<int>> lists) {
+    // min-heap of (value, listIndex, elemIndex)
+    using T = tuple<int,int,int>;
+    priority_queue<T, vector<T>, greater<T>> pq;
+    for (int i = 0; i < (int)lists.size(); i++)
+        if (!lists[i].empty()) pq.push({lists[i][0], i, 0});
+    vector<int> out;
+    while (!pq.empty()) {
+        auto [val, i, j] = pq.top(); pq.pop();
+        out.push_back(val);
+        if (j + 1 < (int)lists[i].size()) pq.push({lists[i][j+1], i, j+1});
+    }
+    return out;
+}
+`,
+  },
+  "climbing-stairs": {
+    cppSolution: `int climbing_stairs(int n) {
+    long long a = 1, b = 1;
+    for (int i = 0; i < n; i++) { long long t = a + b; a = b; b = t; }
+    return (int)a;
+}
+`,
+  },
+  "coin-change": {
+    cppSolution: `int coin_change(vector<int> coins, int amount) {
+    const int INF = 1e9;
+    vector<int> dp(amount + 1, INF);
+    dp[0] = 0;
+    for (int a = 1; a <= amount; a++)
+        for (int c : coins)
+            if (c <= a) dp[a] = min(dp[a], dp[a - c] + 1);
+    return dp[amount] >= INF ? -1 : dp[amount];
+}
+`,
+  },
+  "longest-common-subsequence": {
+    cppSolution: `int longest_common_subsequence(string a, string b) {
+    int m = a.size(), n = b.size();
+    vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));
+    for (int i = 1; i <= m; i++)
+        for (int j = 1; j <= n; j++)
+            dp[i][j] = (a[i-1] == b[j-1]) ? dp[i-1][j-1] + 1
+                                          : max(dp[i-1][j], dp[i][j-1]);
+    return dp[m][n];
+}
+`,
+  },
+  "single-number": {
+    cppSolution: `int single_number(vector<int> nums) {
+    int result = 0;
+    for (int x : nums) result ^= x;
+    return result;
+}
+`,
+  },
+  "counting-bits": {
+    cppSolution: `vector<int> counting_bits(int n) {
+    vector<int> dp(n + 1, 0);
+    for (int i = 1; i <= n; i++) dp[i] = dp[i >> 1] + (i & 1);
+    return dp;
+}
+`,
+  },
+  "min-assignment-cost": {
+    cppSolution: `int min_assignment_cost(vector<vector<int>> cost) {
+    int n = cost.size();
+    const int INF = 1e9;
+    vector<int> dp(1 << n, INF);
+    dp[0] = 0;
+    for (int mask = 0; mask < (1 << n); mask++) {
+        if (dp[mask] == INF) continue;
+        int w = __builtin_popcount(mask);   // next worker
+        if (w == n) continue;
+        for (int j = 0; j < n; j++)
+            if (!(mask & (1 << j)))
+                dp[mask | (1 << j)] = min(dp[mask | (1 << j)], dp[mask] + cost[w][j]);
+    }
+    return dp[(1 << n) - 1];
+}
+`,
+  },
+  "gcd": {
+    cppSolution: `long long gcd(long long a, long long b) {
+    while (b) { a %= b; swap(a, b); }
+    return a;
+}
+`,
+  },
+  "mod-pow": {
+    cppSolution: `long long mod_pow(long long base, long long exp, long long mod) {
+    if (mod == 1) return 0;
+    long long result = 1; base %= mod;
+    while (exp > 0) {
+        if (exp & 1) result = result * base % mod;
+        base = base * base % mod;
+        exp >>= 1;
+    }
+    return result;
+}
+`,
+  },
+  "ncr-mod": {
+    cppSolution: `long long mod_pow(long long b, long long e, long long m); // as above
+
+long long ncr_mod(long long n, long long r, long long p) {
+    if (r < 0 || r > n) return 0;
+    long long num = 1, den = 1;
+    for (long long i = 0; i < r; i++) {
+        num = num * ((n - i) % p) % p;
+        den = den * ((i + 1) % p) % p;
+    }
+    return num * mod_pow(den, p - 2, p) % p;  // Fermat inverse
+}
+`,
+  },
+  "tsp-held-karp": {
+    cppSolution: `int held_karp(vector<vector<int>> dist) {
+    int n = dist.size();
+    if (n == 1) return 0;
+    const int INF = 1e9;
+    vector<vector<int>> dp(1 << n, vector<int>(n, INF));
+    dp[1][0] = 0;                       // mask {0}, ending at 0
+    for (int mask = 0; mask < (1 << n); mask++) {
+        if (!(mask & 1)) continue;
+        for (int i = 0; i < n; i++) {
+            if (dp[mask][i] == INF) continue;
+            for (int j = 0; j < n; j++) {
+                if (mask & (1 << j)) continue;
+                int nm = mask | (1 << j);
+                dp[nm][j] = min(dp[nm][j], dp[mask][i] + dist[i][j]);
+            }
+        }
+    }
+    int full = (1 << n) - 1, best = INF;
+    for (int i = 1; i < n; i++) best = min(best, dp[full][i] + dist[i][0]);
+    return best;
+}
+`,
+  },
 };

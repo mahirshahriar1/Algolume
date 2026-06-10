@@ -159,6 +159,89 @@ export function VizThumb({ id }: { id: string }) {
           </g>
         </svg>
       );
+    case "graphs":
+      return (
+        <svg viewBox="0 0 96 56" className={wrap}>
+          <g fill="none" stroke="currentColor" strokeWidth="2">
+            {/* tree edges (solid) + a non-tree edge (dashed) */}
+            <path d="M20 40 L40 16 L64 34 L80 14" opacity="0.9" />
+            <path d="M40 16 L64 34" opacity="0.85" />
+            <path d="M20 40 L64 34" opacity="0.3" strokeDasharray="4 4" />
+            <path d="M40 16 L80 14" opacity="0.3" strokeDasharray="4 4" />
+          </g>
+          <g fill="currentColor">
+            {[[20, 40], [40, 16], [64, 34], [80, 14]].map(([x, y], i) => (
+              <circle key={i} cx={x} cy={y} r="5" opacity={i === 0 ? 0.95 : 0.6} />
+            ))}
+          </g>
+        </svg>
+      );
+    case "bits":
+      return (
+        <svg viewBox="0 0 96 56" className={wrap}>
+          <g>
+            {[0, 1].map((r) =>
+              [0, 1, 2, 3, 4, 5].map((c) => {
+                const on = (r === 0 ? [1, 0, 1, 1, 0, 1] : [0, 1, 1, 0, 1, 1])[c] === 1;
+                return (
+                  <rect
+                    key={`${r}-${c}`}
+                    x={14 + c * 12}
+                    y={12 + r * 16}
+                    width="9"
+                    height="12"
+                    rx="2"
+                    className="fill-current"
+                    opacity={on ? 0.9 : 0.25}
+                  />
+                );
+              }),
+            )}
+          </g>
+        </svg>
+      );
+    case "dp":
+      return (
+        <svg viewBox="0 0 96 56" className={wrap}>
+          <g>
+            {[0, 1, 2].map((r) =>
+              [0, 1, 2, 3].map((c) => {
+                const on = r <= 1 && c <= 2;
+                return (
+                  <rect
+                    key={`${r}-${c}`}
+                    x={20 + c * 15}
+                    y={8 + r * 14}
+                    width="12"
+                    height="11"
+                    rx="2"
+                    className={on ? "fill-current" : "fill-current opacity-25"}
+                    opacity={r === 1 && c === 2 ? 1 : on ? 0.6 : 0.25}
+                  />
+                );
+              }),
+            )}
+          </g>
+        </svg>
+      );
+    case "heap":
+      return (
+        <svg viewBox="0 0 96 56" className={wrap}>
+          <g fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M48 12 L30 30" opacity="0.7" />
+            <path d="M48 12 L66 30" opacity="0.7" />
+            <path d="M30 30 L20 46" opacity="0.5" />
+            <path d="M30 30 L40 46" opacity="0.5" />
+            <path d="M66 30 L58 46" opacity="0.5" />
+          </g>
+          <g fill="currentColor">
+            <circle cx="48" cy="12" r="6" opacity="0.95" />
+            {[[30, 30], [66, 30], [20, 46], [40, 46], [58, 46]].map(([x, y], i) => (
+              <circle key={i} cx={x} cy={y} r="5" opacity={0.55} />
+            ))}
+          </g>
+        </svg>
+      );
     case "hash":
       return (
         <svg viewBox="0 0 96 56" className={wrap}>

@@ -4,6 +4,16 @@ import { searchingProblems } from "./sets/searching";
 import { recursionProblems } from "./sets/recursion";
 import { hashingProblems } from "./sets/hashing";
 import { stackStringProblems } from "./sets/stacks-strings";
+import { sortingProblems } from "./sets/sorting";
+import { treeProblems } from "./sets/trees";
+import { traversalProblems } from "./sets/traversals";
+import { linkedListProblems } from "./sets/linked-lists";
+import { pathfindingProblems } from "./sets/pathfinding";
+import { stringProblems } from "./sets/strings";
+import { heapProblems } from "./sets/heaps";
+import { dpProblems } from "./sets/dp";
+import { bitProblems } from "./sets/bit-manipulation";
+import { mathProblems } from "./sets/math";
 import { mstProblems } from "./sets/mst";
 import { CPP_SNIPPETS } from "./cpp";
 
@@ -16,6 +26,16 @@ export const PROBLEMS: Problem[] = [
   ...recursionProblems,
   ...hashingProblems,
   ...stackStringProblems,
+  ...sortingProblems,
+  ...treeProblems,
+  ...traversalProblems,
+  ...linkedListProblems,
+  ...pathfindingProblems,
+  ...stringProblems,
+  ...heapProblems,
+  ...dpProblems,
+  ...bitProblems,
+  ...mathProblems,
   ...mstProblems,
 ].map((problem) => ({ ...problem, ...CPP_SNIPPETS[problem.id] }));
 
@@ -54,6 +74,11 @@ export const TOPIC_LABEL: Record<string, string> = {
   "stacks-queues": "Stacks & queues",
   trees: "Trees",
   traversals: "Traversals",
+  heaps: "Heaps",
+  "dynamic-programming": "Dynamic programming",
+  "bit-manipulation": "Bit manipulation",
+  math: "Math for algorithms",
+  "linked-lists": "Linked lists",
   pathfinding: "Pathfinding",
   "minimum-spanning-trees": "Minimum spanning trees",
 };

@@ -1,13 +1,17 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Download, NotebookPen, Trash2, ArrowRight, BookOpen, Search } from "lucide-react";
+import { Download, NotebookPen, Trash2, ArrowRight, BookOpen, Search, RotateCcw } from "lucide-react";
 import { getAllNotes, noteKeyFor } from "@/lib/notesStore";
 import { getLesson } from "@/content";
 import { MarkdownLite } from "@/components/lesson/MarkdownLite";
+import { clearAllProgress, useCompleted } from "@/lib/progress";
+import { clearAllSolved, useSolved } from "@/lib/problems/solved";
 
 export function NotesPage() {
   const [tick, setTick] = useState(0);
   const [query, setQuery] = useState("");
+  const completed = useCompleted();
+  const solved = useSolved();
   const allNotes = useMemo(() => {
     void tick; // re-read after edits/deletes
     return getAllNotes().map((n) => {
@@ -140,6 +144,36 @@ export function NotesPage() {
           ))}
         </div>
       )}
+
+      {/* Manage progress — all data is local to this browser. */}
+      <div className="mt-12 border-t border-line pt-6">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-subtle">Manage progress</h2>
+        <p className="mt-1 text-sm text-muted">
+          Everything is stored locally in this browser. Resetting can't be undone.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            onClick={() => {
+              if (window.confirm(`Reset ${completed.size} completed lesson(s)?`)) clearAllProgress();
+            }}
+            disabled={completed.size === 0}
+            className="btn-ghost text-sm disabled:opacity-40"
+          >
+            <RotateCcw className="h-4 w-4" />
+            Reset lesson progress ({completed.size})
+          </button>
+          <button
+            onClick={() => {
+              if (window.confirm(`Reset ${solved.size} solved problem(s)?`)) clearAllSolved();
+            }}
+            disabled={solved.size === 0}
+            className="btn-ghost text-sm disabled:opacity-40"
+          >
+            <RotateCcw className="h-4 w-4" />
+            Reset solved problems ({solved.size})
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -38,7 +38,7 @@ export function CodeEditor({
 
   return (
     <div
-      className={`flex overflow-hidden rounded-xl border border-line bg-surface font-mono text-[13px] leading-6 ${className ?? ""}`}
+      className={`flex overflow-hidden rounded-xl border border-line bg-code font-mono text-[13px] leading-6 ${className ?? ""}`}
     >
       <div
         ref={gutterRef}

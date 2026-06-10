@@ -9,15 +9,22 @@ import { stacksQueues } from "./chapters/stacks-queues";
 import { hashing } from "./chapters/hashing";
 import { trees } from "./chapters/trees";
 import { traversals } from "./chapters/traversals";
+import { heaps } from "./chapters/heaps";
 import { pathfinding } from "./chapters/pathfinding";
 import { minimumSpanningTrees } from "./chapters/minimum-spanning-trees";
+import { dynamicProgramming } from "./chapters/dynamic-programming";
+import { bitManipulation } from "./chapters/bit-manipulation";
+import { mathForAlgorithms } from "./chapters/math";
+import { npHardness } from "./chapters/np-hardness";
 import { competitiveProgramming } from "./chapters/competitive-programming";
 
 // Reading order starts with practical CP onboarding, then follows the algorithm outline.
 export const CHAPTERS: Chapter[] = [
   competitiveProgramming,
   foundations,
+  npHardness,
   arrays,
+  bitManipulation,
   searching,
   sorting,
   recursion,
@@ -26,8 +33,11 @@ export const CHAPTERS: Chapter[] = [
   hashing,
   trees,
   traversals,
+  heaps,
   pathfinding,
   minimumSpanningTrees,
+  dynamicProgramming,
+  mathForAlgorithms,
 ];
 
 export interface LessonRef {

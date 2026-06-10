@@ -1,4 +1,4 @@
-import { callout, chapter, derive, heading, lesson, prose, step, viz } from "../builder";
+import { callout, chapter, derive, heading, lesson, problem, prose, step, viz } from "../builder";
 
 export const linkedLists = chapter(
   "linked-lists",
@@ -107,6 +107,9 @@ export const linkedLists = chapter(
         prose(
           "Linked lists are the backbone of other structures: a **stack** and a **queue** can both be built from one, and hash tables chain collisions with them.",
         ),
+        problem("reverse-linked-list"),
+        problem("remove-nth-from-end"),
+        problem("add-two-numbers"),
       ],
     ),
     lesson(

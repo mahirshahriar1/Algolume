@@ -26,6 +26,19 @@ import {
 } from "@/lib/sims/tree";
 import { emptyBuckets, hashInsertOp, hashLookupOp, HASH_CODE, type Bucket, type HashFrame } from "@/lib/sims/hash";
 import {
+  heapSeed, heapSnapshot, heapInsertOp, heapExtractOp, HEAP_CODE,
+  type HeapHandle, type HeapFrame, type HeapOpResult,
+} from "@/lib/sims/heap";
+import { HeapCanvas } from "./HeapCanvas";
+import {
+  buildDpFrames, dpCode, DP_LIMITS, type DpMode,
+} from "@/lib/sims/dp";
+import { DpCanvas } from "./DpCanvas";
+import {
+  buildBitFrames, bitCode, BIT_OPS, BIT_MASK, type BitOp,
+} from "@/lib/sims/bits";
+import { BitsCanvas } from "./BitsCanvas";
+import {
   buildBacktrackingFrames,
   buildDivideFrames,
   buildFactorialFrames,
@@ -1372,5 +1385,343 @@ export function ShortestPathViz({ complexity, lesson }: Meta) {
       ]}
       canvas={<ShortestPathCanvas frame={player.current} />}
     />
+  );
+}
+
+/* ---- Bit manipulation ----------------------------------------------------- */
+
+export function BitsViz({ complexity, lesson }: Meta) {
+  const [op, setOp] = useState<BitOp>("and");
+  const [a, setA] = useState("182");
+  const [b, setB] = useState("90");
+  const [k, setK] = useState(2);
+  const meta = BIT_OPS.find((o) => o.id === op)!;
+  const an = Math.max(0, Math.min(BIT_MASK, parseInt(a, 10) || 0));
+  const bn = Math.max(0, Math.min(BIT_MASK, parseInt(b, 10) || 0));
+  const frames = useMemo(() => buildBitFrames(op, an, bn, k), [op, an, bn, k]);
+  const player = usePlayer(frames, 2, true, true);
+
+  const numField = (label: string, val: string, set: (v: string) => void) => (
+    <label className="block space-y-1.5">
+      <span className="text-xs font-semibold uppercase tracking-wider text-subtle">{label} <span className="font-normal normal-case">(0–255)</span></span>
+      <input
+        value={val}
+        onChange={(e) => set(e.target.value.replace(/[^0-9]/g, "").slice(0, 3))}
+        inputMode="numeric"
+        className="h-9 w-full rounded-lg border border-line bg-surface px-3 font-mono text-sm text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-run/50"
+      />
+    </label>
+  );
+
+  const controls = (
+    <Controls title="Bit operation">
+      <div className="grid grid-cols-2 gap-1.5">
+        {BIT_OPS.map((o) => (
+          <button
+            key={o.id}
+            onClick={() => setOp(o.id)}
+            className={cn(
+              "rounded-lg px-2.5 py-2 text-xs font-medium transition-colors duration-150 cursor-pointer",
+              o.id === op ? "bg-run/15 text-fg ring-1 ring-run/40" : "bg-elevated text-muted hover:bg-line/60",
+            )}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+      <div className="space-y-3 border-t border-line/70 pt-3">
+        {numField("a", a, setA)}
+        {meta.binary && numField("b", b, setB)}
+        {(op === "shl" || op === "shr") && (
+          <label className="block space-y-1.5">
+            <span className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-subtle">
+              <span>Shift by</span><span className="font-mono text-run">{k}</span>
+            </span>
+            <input type="range" min={0} max={8} value={k} onChange={(e) => setK(+e.target.value)} className="w-full accent-run" />
+          </label>
+        )}
+      </div>
+      <p className="rounded-lg bg-elevated px-3 py-2 text-xs leading-5 text-muted">
+        Values are shown as 8-bit binary with place values. Scrub to apply the
+        operation column by column.
+      </p>
+    </Controls>
+  );
+
+  return (
+    <VizShell3
+      player={player}
+      code={bitCode(op)}
+      complexity={complexity}
+      lesson={lesson}
+      controls={controls}
+      stats={[{ label: "Op", value: meta.symbol }, ...(player.current?.stats ?? [])]}
+      canvas={<BitsCanvas frame={player.current} />}
+    />
+  );
+}
+
+/* ---- Dynamic programming table -------------------------------------------- */
+
+const DP_MODES: [DpMode, string, string][] = [
+  ["coin", "Coin change (1D)", "Min coins to make an amount — a 1D table."],
+  ["paths", "Unique paths (2D)", "Count grid paths — each cell adds up + left."],
+  ["edit", "Edit distance (2D)", "Turn one string into another — 3-way min."],
+  ["tsp", "Travelling salesman", "Held-Karp bitmask DP: dp[mask][end] over subsets."],
+];
+
+export function DpViz({ complexity, lesson }: Meta) {
+  const [mode, setMode] = useState<DpMode>("coin");
+  const [coins, setCoins] = useState("1, 3, 4");
+  const [amount, setAmount] = useState(6);
+  const [rows, setRows] = useState(3);
+  const [cols, setCols] = useState(4);
+  const [a, setA] = useState("horse");
+  const [b, setB] = useState("ros");
+  const [cities, setCities] = useState(4);
+
+  const coinList = useMemo(
+    () => coins.split(/[\s,]+/).map((x) => parseInt(x, 10)).filter((n) => Number.isFinite(n) && n > 0).slice(0, 5),
+    [coins],
+  );
+  const frames = useMemo(() => {
+    if (mode === "paths") return buildDpFrames("paths", { rows, cols });
+    if (mode === "edit") return buildDpFrames("edit", { a, b });
+    if (mode === "tsp") return buildDpFrames("tsp", { cities });
+    return buildDpFrames("coin", { coins: coinList.length ? coinList : [1], amount });
+  }, [mode, rows, cols, a, b, coinList, amount, cities]);
+  const player = usePlayer(frames, 2, true, true);
+
+  const sanitizeStr = (v: string) => v.replace(/[^a-zA-Z]/g, "").slice(0, DP_LIMITS.strMax).toLowerCase();
+
+  const controls = (
+    <Controls title="DP table lab">
+      <div className="grid gap-1.5">
+        {DP_MODES.map(([id, label, desc]) => (
+          <button
+            key={id}
+            onClick={() => setMode(id)}
+            className={cn(
+              "rounded-lg px-3 py-2 text-left transition-colors duration-150 cursor-pointer",
+              id === mode ? "bg-run/15 text-fg ring-1 ring-run/40" : "bg-elevated text-muted hover:bg-line/60",
+            )}
+          >
+            <span className="block text-sm font-semibold">{label}</span>
+            <span className="block text-[11px] leading-4 text-subtle">{desc}</span>
+          </button>
+        ))}
+      </div>
+
+      {mode === "coin" && (
+        <div className="space-y-3 border-t border-line/70 pt-3">
+          <label className="block space-y-1.5">
+            <span className="text-xs font-semibold uppercase tracking-wider text-subtle">Coins</span>
+            <input
+              value={coins}
+              onChange={(e) => setCoins(e.target.value)}
+              className="h-9 w-full rounded-lg border border-line bg-surface px-3 font-mono text-sm text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-run/50"
+            />
+          </label>
+          <label className="block space-y-1.5">
+            <span className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-subtle">
+              <span>Amount</span><span className="font-mono text-run">{amount}</span>
+            </span>
+            <input type="range" min={1} max={DP_LIMITS.coinMaxAmount} value={amount} onChange={(e) => setAmount(+e.target.value)} className="w-full accent-run" />
+          </label>
+        </div>
+      )}
+      {mode === "paths" && (
+        <div className="space-y-3 border-t border-line/70 pt-3">
+          {([["Rows", rows, setRows], ["Cols", cols, setCols]] as const).map(([label, val, set]) => (
+            <label key={label} className="block space-y-1.5">
+              <span className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-subtle">
+                <span>{label}</span><span className="font-mono text-run">{val}</span>
+              </span>
+              <input type="range" min={2} max={DP_LIMITS.gridMax} value={val} onChange={(e) => set(+e.target.value)} className="w-full accent-run" />
+            </label>
+          ))}
+        </div>
+      )}
+      {mode === "edit" && (
+        <div className="space-y-3 border-t border-line/70 pt-3">
+          <label className="block space-y-1.5">
+            <span className="text-xs font-semibold uppercase tracking-wider text-subtle">String A</span>
+            <input value={a} onChange={(e) => setA(sanitizeStr(e.target.value))} className="h-9 w-full rounded-lg border border-line bg-surface px-3 font-mono text-sm text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-run/50" />
+          </label>
+          <label className="block space-y-1.5">
+            <span className="text-xs font-semibold uppercase tracking-wider text-subtle">String B</span>
+            <input value={b} onChange={(e) => setB(sanitizeStr(e.target.value))} className="h-9 w-full rounded-lg border border-line bg-surface px-3 font-mono text-sm text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-run/50" />
+          </label>
+          <p className="text-[11px] leading-4 text-subtle">Up to {DP_LIMITS.strMax} letters each.</p>
+        </div>
+      )}
+      {mode === "tsp" && (
+        <div className="space-y-2 border-t border-line/70 pt-3">
+          <label className="block space-y-1.5">
+            <span className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-subtle">
+              <span>Cities</span><span className="font-mono text-run">{cities}</span>
+            </span>
+            <input type="range" min={DP_LIMITS.tspMin} max={DP_LIMITS.tspMax} value={cities} onChange={(e) => setCities(+e.target.value)} className="w-full accent-run" />
+          </label>
+          <p className="text-[11px] leading-4 text-subtle">
+            Rows = end city, columns = visited subsets containing the start. Each cell
+            is the cheapest path covering that subset and ending there.
+          </p>
+        </div>
+      )}
+
+      <p className="rounded-lg bg-elevated px-3 py-2 text-xs leading-5 text-muted">
+        Each cell is a subproblem; the highlighted cells show what the current cell
+        reads. Scrub to watch the table fill.
+      </p>
+    </Controls>
+  );
+
+  return (
+    <VizShell3
+      player={player}
+      code={dpCode(mode)}
+      complexity={complexity}
+      lesson={lesson}
+      controls={controls}
+      stats={[{ label: "Frames", value: frames.length }, ...(player.current?.stats ?? [])]}
+      canvas={<DpCanvas frame={player.current} />}
+    />
+  );
+}
+
+/* ---- Heap / priority queue ------------------------------------------------ */
+
+export function HeapViz({ complexity, lesson }: Meta) {
+  const ref = useRef<HeapHandle>([]);
+  const inited = useRef(false);
+  if (!inited.current) {
+    inited.current = true;
+    ref.current = heapSeed();
+  }
+  const [frames, setFrames] = useState<HeapFrame[]>(() => [heapSnapshot(ref.current, "A valid min-heap. Insert a value, or extract the minimum.")]);
+  const [val, setVal] = useState("");
+  const player = usePlayer(frames, 2, true);
+
+  const apply = (res: HeapOpResult) => {
+    ref.current = res.next;
+    setFrames(res.frames.length ? res.frames : [heapSnapshot(res.next, "")]);
+    setVal("");
+  };
+  const num = () => (val === "" ? rnd() : parseInt(val, 10));
+
+  const controls = (
+    <Controls
+      title="Heap operations"
+      legend={<Legend items={[
+        { label: "Active", cls: "bg-compare" },
+        { label: "Compare", cls: "bg-pivot/40" },
+        { label: "Swap", cls: "bg-swap" },
+        { label: "Min / new", cls: "bg-run" },
+      ]} />}
+    >
+      <NumInput value={val} onChange={setVal} onEnter={() => apply(heapInsertOp(ref.current, num()))} />
+      <div className="grid grid-cols-2 gap-2">
+        <OpButton tone="primary" onClick={() => apply(heapInsertOp(ref.current, num()))} icon={<Plus className="h-4 w-4" />}>Insert</OpButton>
+        <OpButton onClick={() => apply(heapExtractOp(ref.current))} icon={<Minus className="h-4 w-4" />}>Extract-min</OpButton>
+        <OpButton onClick={() => { ref.current = heapSeed(); setFrames([heapSnapshot(ref.current, "Reset to a sample heap.")]); }} icon={<RotateCcw className="h-4 w-4" />}>Sample</OpButton>
+        <OpButton onClick={() => { ref.current = []; setFrames([heapSnapshot([], "Empty heap — insert to begin.")]); }} icon={<Trash2 className="h-4 w-4" />}>Clear</OpButton>
+      </div>
+      <p className="rounded-lg bg-elevated px-3 py-2 text-xs leading-5 text-muted">
+        A min-heap is a complete binary tree kept in an array: node <span className="font-mono">i</span> has
+        children <span className="font-mono">2i+1</span>, <span className="font-mono">2i+2</span>. Insert sifts
+        up; extract-min sifts down.
+      </p>
+    </Controls>
+  );
+
+  const cur = player.current;
+  return (
+    <VizShell3
+      player={player}
+      code={HEAP_CODE}
+      complexity={complexity}
+      lesson={lesson}
+      controls={controls}
+      stats={cur?.stats ?? []}
+      canvas={<HeapCanvas frame={cur} />}
+    />
+  );
+}
+
+/* ---- Weighted-graph lab: shortest paths · MST · union-find --------------- */
+
+type GraphTab = "shortest" | "mst" | "dsu";
+
+const GRAPH_TABS: { id: GraphTab; label: string; tagline: string; lesson: string; complexity: { label: string; value: string }[] }[] = [
+  {
+    id: "shortest",
+    label: "Shortest paths",
+    tagline: "Cheapest route between vertices — Bellman-Ford relaxes edges, Floyd-Warshall fills a distance matrix.",
+    lesson: "/learn/pathfinding/bellman-ford",
+    complexity: [{ label: "BF", value: "O(VE)" }, { label: "FW", value: "O(V^3)" }, { label: "Space", value: "V / V^2" }],
+  },
+  {
+    id: "mst",
+    label: "Spanning tree",
+    tagline: "Cheapest set of edges that connects every vertex — Kruskal adds by weight, Prim grows across a cut.",
+    lesson: "/learn/minimum-spanning-trees/mst-definition",
+    complexity: [{ label: "Kruskal", value: "O(E log E)" }, { label: "Prim", value: "O(E log V)" }, { label: "DSU", value: "α(V)" }],
+  },
+  {
+    id: "dsu",
+    label: "Union-Find",
+    tagline: "The connectivity engine inside Kruskal: which vertices are already in the same component?",
+    lesson: "/learn/minimum-spanning-trees/kruskal-dsu",
+    complexity: [{ label: "Find", value: "α(n)" }, { label: "Union", value: "α(n)" }, { label: "Space", value: "O(n)" }],
+  },
+];
+
+const GRAPH_TAB_BY_ID: Record<string, GraphTab> = {
+  graphs: "shortest",
+  "shortest-paths": "shortest",
+  "bellman-ford": "shortest",
+  "floyd-warshall": "shortest",
+  mst: "mst",
+  kruskal: "mst",
+  prim: "mst",
+  dsu: "dsu",
+  "union-find": "dsu",
+};
+
+/**
+ * One lab for the weighted-graph family, so the three algorithms don't sprawl
+ * across three look-alike cards. A segmented control switches between shortest
+ * paths, the minimum spanning tree, and the union-find structure that powers
+ * Kruskal — each its own distinct canvas, with its own lesson link + complexity.
+ */
+export function GraphAlgosViz({ initial }: { initial?: string }) {
+  const [tab, setTab] = useState<GraphTab>(GRAPH_TAB_BY_ID[initial ?? ""] ?? "shortest");
+  const active = GRAPH_TABS.find((t) => t.id === tab)!;
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl border border-line bg-surface p-1.5">
+        <div className="grid grid-cols-3 gap-1.5">
+          {GRAPH_TABS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={cn(
+                "rounded-lg px-3 py-2 text-sm font-semibold transition-colors duration-150 cursor-pointer",
+                t.id === tab ? "bg-run/15 text-fg ring-1 ring-run/40" : "text-muted hover:bg-elevated",
+              )}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <p className="px-2 pb-1 pt-2 text-xs leading-5 text-subtle">{active.tagline}</p>
+      </div>
+
+      {tab === "shortest" && <ShortestPathViz complexity={active.complexity} lesson={active.lesson} />}
+      {tab === "mst" && <MstViz complexity={active.complexity} lesson={active.lesson} />}
+      {tab === "dsu" && <DsuViz complexity={active.complexity} lesson={active.lesson} />}
+    </div>
   );
 }

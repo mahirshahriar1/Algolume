@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import type { PointerEvent, ReactNode } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowRight,
   BookOpen,
@@ -11,6 +11,7 @@ import {
   Move,
   RotateCcw,
   Search,
+  Shuffle,
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
@@ -151,8 +152,8 @@ const ROADMAP_NODES: RoadmapNode[] = [
     label: "Heap / Priority Queue",
     x: 355,
     y: 648,
+    topics: ["heaps"],
     accent: "compare",
-    planned: true,
     blurb: "Extract-min/max structures for greedy and graph algorithms.",
   },
   {
@@ -169,8 +170,8 @@ const ROADMAP_NODES: RoadmapNode[] = [
     label: "1-D DP",
     x: 900,
     y: 648,
+    topics: ["dynamic-programming"],
     accent: "compare",
-    planned: true,
     blurb: "State transitions over one dimension.",
   },
   {
@@ -205,8 +206,8 @@ const ROADMAP_NODES: RoadmapNode[] = [
     label: "2-D DP",
     x: 815,
     y: 754,
+    topics: ["dynamic-programming"],
     accent: "compare",
-    planned: true,
     blurb: "Grid/table states with row-column transitions.",
   },
   {
@@ -214,8 +215,8 @@ const ROADMAP_NODES: RoadmapNode[] = [
     label: "Bit Manipulation",
     x: 1010,
     y: 754,
+    topics: ["bit-manipulation"],
     accent: "compare",
-    planned: true,
     blurb: "Binary operators, masks, submasks, and bit tricks.",
   },
 ];
@@ -254,8 +255,8 @@ const EXTRA_ROADMAP_NODES: RoadmapNode[] = [
     label: "Math & Geometry",
     x: 820,
     y: 874,
+    topics: ["math"],
     accent: "run",
-    planned: true,
     blurb: "Number theory, precision, combinatorics, and geometry.",
   },
 ];
@@ -279,6 +280,7 @@ const NODE_ACCENT: Record<Accent, string> = {
 
 export function ProblemsPage() {
   const solved = useSolved();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedNodeId = readNodeParam(searchParams);
   const difficulty = readDifficultyParam(searchParams);
@@ -327,6 +329,20 @@ export function ProblemsPage() {
   }, [selectedNodeId, selectedTopics, difficulty, statusFilter, query, solved]);
 
   const solvedCount = PROBLEMS.filter((problem) => solved.has(problem.id)).length;
+
+  // Per-difficulty solved tallies for the summary chips.
+  const diffStats = DIFFICULTY_ORDER.map((d) => {
+    const all = PROBLEMS.filter((p) => p.difficulty === d);
+    return { d, total: all.length, solved: all.filter((p) => solved.has(p.id)).length };
+  });
+
+  // Jump to a random unsolved problem (or any problem if all are solved).
+  const pickRandom = () => {
+    const unsolved = PROBLEMS.filter((p) => !solved.has(p.id));
+    const pool = unsolved.length ? unsolved : PROBLEMS;
+    const choice = pool[Math.floor(Math.random() * pool.length)];
+    if (choice) navigate(`/problems/${choice.id}`);
+  };
   const focusStats = selectedNode
     ? roadmapStats.get(selectedNode.id) ?? { total: 0, solved: 0 }
     : { total: PROBLEM_COUNT, solved: solvedCount };
@@ -395,20 +411,38 @@ export function ProblemsPage() {
               where your practice path is filling in.
             </p>
           </div>
-          <div className="rounded-2xl border border-line bg-surface px-4 py-3 shadow-sm">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
-              Solved
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-end">
+            <div className="rounded-2xl border border-line bg-surface px-4 py-3 shadow-sm">
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
+                Solved
+              </div>
+              <div className="mt-1 flex items-end gap-2">
+                <span className="font-mono text-2xl font-semibold text-run">{solvedCount}</span>
+                <span className="pb-1 text-sm text-muted">/ {PROBLEM_COUNT}</span>
+              </div>
+              <div className="mt-2 flex gap-2">
+                {diffStats.map((s) => (
+                  <span
+                    key={s.d}
+                    className="rounded-md bg-elevated px-1.5 py-0.5 font-mono text-[11px] text-muted"
+                    title={`${DIFFICULTY_LABEL[s.d]}: ${s.solved} of ${s.total} solved`}
+                  >
+                    <span className={cn(s.d === "easy" ? "text-run" : s.d === "medium" ? "text-pivot" : "text-swap")}>
+                      {DIFFICULTY_LABEL[s.d][0]}
+                    </span>{" "}
+                    {s.solved}/{s.total}
+                  </span>
+                ))}
+              </div>
             </div>
-            <div className="mt-1 flex items-end gap-2">
-              <span className="font-mono text-2xl font-semibold text-run">{solvedCount}</span>
-              <span className="pb-1 text-sm text-muted">/ {PROBLEM_COUNT}</span>
-            </div>
-            <div className="mt-2 h-1.5 w-32 overflow-hidden rounded-full bg-elevated">
-              <div
-                className="h-full rounded-full bg-run"
-                style={{ width: `${PROBLEM_COUNT ? (solvedCount / PROBLEM_COUNT) * 100 : 0}%` }}
-              />
-            </div>
+            <button
+              onClick={pickRandom}
+              className="btn-ghost"
+              title="Open a random unsolved problem"
+            >
+              <Shuffle className="h-4 w-4" />
+              Random
+            </button>
           </div>
         </div>
       </div>

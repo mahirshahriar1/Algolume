@@ -66,12 +66,21 @@ function BellmanFordCanvas({ frame }: { frame: ShortestPathFrame }) {
                 strokeWidth={isActive ? 1.9 : 1}
                 strokeLinecap="round"
               />
+              <rect
+                x={pt.x - 3.4}
+                y={pt.y - 3.1}
+                width={6.8}
+                height={4.8}
+                rx={1.5}
+                className={cn("fill-surface", isActive ? "stroke-compare" : "stroke-line/60")}
+                strokeWidth={0.5}
+              />
               <text
                 x={pt.x}
-                y={pt.y}
+                y={pt.y + 0.6}
                 textAnchor="middle"
-                className={cn("fill-fg font-mono", isActive && "font-bold")}
-                style={{ fontSize: 4.2 }}
+                className={cn("font-mono", isActive ? "fill-fg font-bold" : "fill-muted")}
+                style={{ fontSize: 3.6 }}
               >
                 {edge.w}
               </text>

@@ -1,4 +1,5 @@
 import { cn } from "@/lib/cn";
+import { CopyButton } from "./CopyButton";
 
 /**
  * Read-only source view with the currently-executing line(s) highlighted —
@@ -24,11 +25,14 @@ export function CodePanel({
           <span className="h-3 w-3 rounded-full bg-pivot/70" />
           <span className="h-3 w-3 rounded-full bg-run/70" />
         </div>
-        <span className="font-mono text-xs uppercase tracking-wider text-subtle">
-          {language}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-xs uppercase tracking-wider text-subtle">
+            {language}
+          </span>
+          <CopyButton text={code.join("\n")} />
+        </div>
       </div>
-      <pre className="overflow-auto py-2 font-mono text-[13px] leading-relaxed">
+      <pre className="overflow-auto bg-code py-2 font-mono text-[13px] leading-relaxed">
         <code>
           {code.map((line, i) => {
             const lineNo = i + 1;

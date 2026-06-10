@@ -1,4 +1,5 @@
 import { type ReactNode } from "react";
+import { CopyButton } from "@/components/CopyButton";
 
 /**
  * A deliberately small Markdown renderer for the subset we author by hand (and
@@ -96,9 +97,14 @@ export function MarkdownLite({ md }: { md: string }) {
       {blocks.map((b, i) => {
         if (b.t === "code") {
           return (
-            <pre key={i} className="my-4 overflow-auto rounded-xl border border-line bg-elevated/60 p-4 font-mono text-[13px] leading-relaxed text-fg">
-              <code>{b.lines.join("\n")}</code>
-            </pre>
+            <div key={i} className="group relative my-4">
+              <div className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100">
+                <CopyButton text={b.lines.join("\n")} className="bg-surface/80 backdrop-blur" />
+              </div>
+              <pre className="overflow-auto rounded-xl border border-line bg-code p-4 font-mono text-[13px] leading-relaxed text-fg">
+                <code>{b.lines.join("\n")}</code>
+              </pre>
+            </div>
           );
         }
         if (b.t === "ul") {

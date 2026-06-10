@@ -58,6 +58,7 @@ print("reversed:", reverse_in_place(data))
         ),
         problem("running-sum"),
         problem("move-zeroes"),
+        problem("valid-palindrome"),
       ],
     ),
     lesson(
@@ -92,6 +93,7 @@ print("reversed:", reverse_in_place(data))
           "complexity",
           "`O(n)` time, `O(1)` extra space. The window also stretches and shrinks for 'longest/shortest subarray with property X' problems.",
         ),
+        problem("longest-substring-no-repeat"),
       ],
     ),
   ],

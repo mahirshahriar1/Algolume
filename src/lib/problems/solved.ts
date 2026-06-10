@@ -45,6 +45,13 @@ export function clearSolved(id: string) {
   persist();
 }
 
+/** Wipe all solved markers (used by the reset-progress control). */
+export function clearAllSolved() {
+  if (solved.size === 0) return;
+  solved = new Set();
+  persist();
+}
+
 function subscribe(cb: () => void): () => void {
   listeners.add(cb);
   return () => listeners.delete(cb);

@@ -26,7 +26,7 @@ export function VisualizerDetailPage() {
         </div>
       </div>
 
-      {v.Component(v)}
+      {v.Component(v, id)}
     </div>
   );
 }

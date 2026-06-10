@@ -1,10 +1,11 @@
 import {
-  BarChart3, GitBranch, Hash, Layers, ListRestart, ListTree, Network, Rows3, Search, Spline,
+  BarChart3, Binary, GitBranch, Grid3x3, Hash, Layers, ListRestart, ListTree, Network, Rows3, Search, Spline,
+  Triangle,
   type LucideIcon,
 } from "lucide-react";
 import {
   InteractiveSeq, InteractiveHash, ArrayViz, SearchingViz, RecursionViz, TraversalViz,
-  TreesViz, ShortestPathViz, MstViz, DsuViz,
+  TreesViz, GraphAlgosViz, HeapViz, DpViz, BitsViz,
 } from "@/components/sim/Interactive";
 
 export interface VizEntry {
@@ -17,8 +18,8 @@ export interface VizEntry {
   /** external standalone page (Sorting/Pathfinding have richer dedicated pages) */
   to?: string;
   complexity?: { label: string; value: string }[];
-  /** 3-pane page body for this visualizer */
-  Component?: (entry: VizEntry) => JSX.Element;
+  /** 3-pane page body for this visualizer; `id` is the matched route id (for alias tabs). */
+  Component?: (entry: VizEntry, id?: string) => JSX.Element;
 }
 
 export const VISUALIZERS: VizEntry[] = [
@@ -112,14 +113,14 @@ export const VISUALIZERS: VizEntry[] = [
     Component: (e) => <TreesViz complexity={e.complexity} lesson={e.lesson} />,
   },
   {
-    id: "dsu",
-    title: "DSU / Union-Find",
-    blurb: "Find representatives, compress paths, and unite components by size.",
-    icon: GitBranch,
-    accent: "text-compare",
-    lesson: "/learn/minimum-spanning-trees/kruskal-dsu",
-    complexity: [{ label: "Find", value: "α(n)" }, { label: "Union", value: "α(n)" }, { label: "Space", value: "O(n)" }],
-    Component: (e) => <DsuViz complexity={e.complexity} lesson={e.lesson} />,
+    id: "heap",
+    title: "Heap / priority queue",
+    blurb: "Insert and extract-min on a min-heap — watch values sift up and down, with the backing array in sync.",
+    icon: Triangle,
+    accent: "text-pivot",
+    lesson: "/learn/heaps/heap-basics",
+    complexity: [{ label: "Push", value: "O(log n)" }, { label: "Pop-min", value: "O(log n)" }, { label: "Peek", value: "O(1)" }],
+    Component: (e) => <HeapViz complexity={e.complexity} lesson={e.lesson} />,
   },
   {
     id: "traversals",
@@ -141,33 +142,51 @@ export const VISUALIZERS: VizEntry[] = [
     lesson: "/learn/pathfinding/search-a-grid",
   },
   {
-    id: "shortest-paths",
-    title: "Shortest paths",
-    blurb: "Bellman-Ford edge relaxation and Floyd-Warshall matrix dynamic programming.",
-    icon: Network,
-    accent: "text-run",
-    lesson: "/learn/pathfinding/bellman-ford",
-    complexity: [{ label: "BF", value: "O(VE)" }, { label: "FW", value: "O(V^3)" }, { label: "Space", value: "V / V^2" }],
-    Component: (e) => <ShortestPathViz complexity={e.complexity} lesson={e.lesson} />,
+    id: "bits",
+    title: "Bit manipulation",
+    blurb: "AND/OR/XOR/NOT, shifts, and the x & -x / x & (x-1) tricks — applied bit by bit on 8-bit binary with place values.",
+    icon: Binary,
+    accent: "text-compare",
+    lesson: "/learn/bit-manipulation/bit-basics",
+    complexity: [{ label: "Op", value: "O(1)" }, { label: "Popcount", value: "O(bits)" }, { label: "Width", value: "8-bit" }],
+    Component: (e) => <BitsViz complexity={e.complexity} lesson={e.lesson} />,
   },
   {
-    id: "mst",
-    title: "Minimum spanning trees",
-    blurb: "Kruskal edge acceptance/rejection and Prim cut growth on editable weighted graphs.",
+    id: "dp",
+    title: "Dynamic programming",
+    blurb: "Watch a DP table fill cell by cell: coin change (1D), unique paths, and edit distance (2D), with dependencies highlighted.",
+    icon: Grid3x3,
+    accent: "text-visited",
+    lesson: "/learn/dynamic-programming/dp-1d",
+    complexity: [{ label: "Coin", value: "O(amount·k)" }, { label: "Paths", value: "O(R·C)" }, { label: "Edit", value: "O(m·n)" }],
+    Component: (e) => <DpViz complexity={e.complexity} lesson={e.lesson} />,
+  },
+  {
+    id: "graphs",
+    title: "Graph algorithms",
+    blurb: "One weighted-graph lab: shortest paths (Bellman-Ford/Floyd-Warshall), minimum spanning trees (Kruskal/Prim), and the union-find structure that powers Kruskal.",
     icon: Network,
-    accent: "text-pivot",
+    accent: "text-run",
     lesson: "/learn/minimum-spanning-trees/mst-definition",
-    complexity: [{ label: "Kruskal", value: "O(E log E)" }, { label: "Prim", value: "O(E log V)" }, { label: "DSU", value: "α(V)" }],
-    Component: (e) => <MstViz complexity={e.complexity} lesson={e.lesson} />,
+    complexity: [{ label: "Shortest", value: "O(VE)" }, { label: "MST", value: "E log V" }, { label: "Union-Find", value: "α(n)" }],
+    Component: (_e, id) => <GraphAlgosViz initial={id} />,
   },
 ];
 
 const BASE_VIZ_BY_ID = Object.fromEntries(VISUALIZERS.map((v) => [v.id, v])) as Record<string, VizEntry>;
 
+// Old per-algorithm routes still resolve — they open the unified Graph lab, and
+// GraphAlgosViz reads the route id to preselect the matching tab.
 export const VIZ_BY_ID = {
   ...BASE_VIZ_BY_ID,
   bst: BASE_VIZ_BY_ID.trees,
   "red-black-tree": BASE_VIZ_BY_ID.trees,
-  "bellman-ford": BASE_VIZ_BY_ID["shortest-paths"],
-  "floyd-warshall": BASE_VIZ_BY_ID["shortest-paths"],
+  "shortest-paths": BASE_VIZ_BY_ID.graphs,
+  "bellman-ford": BASE_VIZ_BY_ID.graphs,
+  "floyd-warshall": BASE_VIZ_BY_ID.graphs,
+  mst: BASE_VIZ_BY_ID.graphs,
+  kruskal: BASE_VIZ_BY_ID.graphs,
+  prim: BASE_VIZ_BY_ID.graphs,
+  dsu: BASE_VIZ_BY_ID.graphs,
+  "union-find": BASE_VIZ_BY_ID.graphs,
 } as Record<string, VizEntry>;

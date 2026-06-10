@@ -6,6 +6,7 @@ import {
   Eye, BookOpen, Send, Trophy,
 } from "lucide-react";
 import { CodeEditor } from "@/components/CodeEditor";
+import { CopyButton } from "@/components/CopyButton";
 import { MarkdownLite } from "@/components/lesson/MarkdownLite";
 import { usePyodide } from "@/lib/usePyodide";
 import { getProblem, DIFFICULTY_LABEL, topicLabel } from "@/lib/problems";
@@ -91,9 +92,12 @@ export function ProblemPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-5 py-8 sm:px-6">
-      <Link to="/problems" className="mb-5 inline-flex items-center gap-1.5 text-sm text-muted hover:text-fg">
-        <ArrowLeft className="h-4 w-4" /> All problems
-      </Link>
+      <div className="mb-5 flex items-center justify-between">
+        <Link to="/problems" className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-fg">
+          <ArrowLeft className="h-4 w-4" /> All problems
+        </Link>
+        <CopyButton text={typeof window !== "undefined" ? window.location.href : ""} label="Copy link" />
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* ---- Statement column ------------------------------------------ */}
@@ -167,7 +171,7 @@ export function ProblemPage() {
           {/* Solution */}
           <h2 className="mt-6 mb-2 text-xs font-semibold uppercase tracking-wider text-subtle">Reference solution</h2>
           {showSolution ? (
-            <div className="overflow-hidden rounded-xl border border-line bg-elevated/60">
+            <div className="overflow-hidden rounded-xl border border-line bg-code">
               <div className="flex items-center gap-1.5 border-b border-line px-3 py-2">
                 <LanguagePill
                   active={solutionLanguage === "python"}
@@ -181,6 +185,10 @@ export function ProblemPage() {
                 >
                   C++
                 </LanguagePill>
+                <CopyButton
+                  className="ml-auto"
+                  text={solutionLanguage === "python" ? problem.solution : problem.cppSolution ?? ""}
+                />
               </div>
               <pre className="overflow-auto p-4 font-mono text-[13px] leading-relaxed text-fg">
                 <code>{solutionLanguage === "python" ? problem.solution : problem.cppSolution ?? "// C++ solution not added yet."}</code>

@@ -1,4 +1,4 @@
-import { callout, chapter, derive, heading, lesson, prose, step, viz } from "../builder";
+import { callout, chapter, derive, heading, lesson, problem, prose, step, viz } from "../builder";
 
 export const sorting = chapter(
   "sorting",
@@ -109,6 +109,8 @@ export const sorting = chapter(
           "complexity",
           "`O(n log n)` time in **all** cases (no bad inputs), `O(n)` extra space for the merge buffer, and **stable**. The guaranteed bound is why it's used where worst-case matters.",
         ),
+        problem("merge-two-sorted"),
+        problem("count-inversions"),
       ],
     ),
     lesson(
@@ -143,6 +145,7 @@ export const sorting = chapter(
           "note",
           "Compare quick sort's comparison count to bubble sort's on the same array size. The gap between `O(n log n)` and `O(n²)` is the whole reason we study more than one sort.",
         ),
+        problem("kth-largest"),
       ],
     ),
     lesson(

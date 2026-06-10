@@ -107,19 +107,20 @@ export function generateMstGraph(count: number, seed = 0): MstGraph {
     edges.push({ u: a, v: b, w });
   };
 
+  // Keep the graph sparse so weight labels don't collide: a ring around the
+  // circle (guarantees connectivity) plus a handful of "skip-one" chords.
   for (let i = 0; i < n - 1; i++) {
     push(i, i + 1, 2 + ((seed + i * 3) % 9));
   }
   push(0, n - 1, 4 + (seed % 8));
 
-  for (let i = 0; i < n; i++) {
-    const v = (i + 2 + seed) % n;
-    const w = 3 + ((seed * 5 + i * 7) % 17);
-    push(i, v, w);
-  }
-  for (let i = 0; i < n; i += 2) {
-    const v = (i + 3 + seed) % n;
-    const w = 5 + ((seed * 2 + i * 11) % 19);
+  // ~n/2 chords between every other vertex — enough choice for an interesting
+  // MST without turning the small circle into a hairball.
+  const chords = Math.max(1, Math.floor(n / 2));
+  for (let k = 0; k < chords; k++) {
+    const i = (k * 2 + seed) % n;
+    const v = (i + 2) % n;
+    const w = 6 + ((seed * 5 + k * 7) % 15);
     push(i, v, w);
   }
 

@@ -5,11 +5,23 @@ function edgeLabel(edge: MstEdge, frame: MstFrame) {
   return `${frame.nodes[edge.u].label}-${frame.nodes[edge.v].label}`;
 }
 
+/** Edge-weight label point, nudged off the line so crossing labels don't stack. */
 function labelPoint(edge: MstEdge, frame: MstFrame) {
   const a = frame.nodes[edge.u];
   const b = frame.nodes[edge.v];
-  return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  const mx = (a.x + b.x) / 2;
+  const my = (a.y + b.y) / 2;
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const len = Math.hypot(dx, dy) || 1;
+  // perpendicular unit, side alternated by edge id so parallel edges separate
+  const sign = edge.id % 2 === 0 ? 1 : -1;
+  const off = 2.2 * sign;
+  return { x: mx + (-dy / len) * off, y: my + (dx / len) * off };
 }
+
+// Token-based palette so components read as distinct groups in light + dark.
+const COMPONENT_FILL = ["fill-run", "fill-compare", "fill-pivot", "fill-visited", "fill-swap"];
 
 function edgeTone(edge: MstEdge, frame: MstFrame) {
   const active = frame.activeEdgeId === edge.id;
@@ -28,9 +40,15 @@ export function MstCanvas({ frame }: { frame: MstFrame | undefined }) {
   const edgeById = new Map(frame.edges.map((edge) => [edge.id, edge]));
   const activeEdge = frame.activeEdgeId === undefined ? undefined : edgeById.get(frame.activeEdgeId);
 
+  // Component sizes (Kruskal) so we only colour multi-node groups, not singletons.
+  const compSize = new Map<number, number>();
+  if (frame.components) {
+    for (const c of frame.components) compSize.set(c, (compSize.get(c) ?? 0) + 1);
+  }
+
   return (
     <div className="w-full space-y-4">
-      <svg viewBox="0 0 100 76" className="h-72 w-full" role="img" aria-label="Minimum spanning tree graph">
+      <svg viewBox="0 0 100 78" className="h-72 w-full" role="img" aria-label="Minimum spanning tree graph">
         {frame.edges.map((edge) => {
           const a = frame.nodes[edge.u];
           const b = frame.nodes[edge.v];
@@ -51,20 +69,26 @@ export function MstCanvas({ frame }: { frame: MstFrame | undefined }) {
                 strokeDasharray={rejected ? "3 3" : undefined}
               />
               <rect
-                x={pt.x - 5}
-                y={pt.y - 4.3}
-                width={10}
-                height={7}
-                rx={2}
-                className={cn("fill-surface stroke-line", active && "stroke-compare")}
-                strokeWidth={0.6}
+                x={pt.x - 3.6}
+                y={pt.y - 3.2}
+                width={7.2}
+                height={5.2}
+                rx={1.6}
+                className={cn(
+                  "fill-surface",
+                  active ? "stroke-compare" : accepted ? "stroke-run/60" : "stroke-line/70",
+                )}
+                strokeWidth={0.5}
               />
               <text
                 x={pt.x}
-                y={pt.y + 1.1}
+                y={pt.y + 0.7}
                 textAnchor="middle"
-                className={cn("fill-muted font-mono", (active || accepted) && "fill-fg font-bold")}
-                style={{ fontSize: 4 }}
+                className={cn(
+                  "font-mono",
+                  active || accepted ? "fill-fg font-bold" : "fill-subtle",
+                )}
+                style={{ fontSize: 3.4 }}
               >
                 {edge.w}
               </text>
@@ -75,10 +99,16 @@ export function MstCanvas({ frame }: { frame: MstFrame | undefined }) {
         {frame.nodes.map((node) => {
           const active = activeEdge && (activeEdge.u === node.id || activeEdge.v === node.id);
           const visited = frame.visited?.[node.id] ?? false;
-          const connected = frame.acceptedEdgeIds.some((edgeId) => {
-            const edge = edgeById.get(edgeId);
-            return edge && (edge.u === node.id || edge.v === node.id);
-          });
+          // Kruskal: tint by component (only groups of 2+), so merges are visible
+          // without any text label. Prim: visited fill. Singletons stay neutral.
+          const comp = frame.components?.[node.id];
+          const grouped = comp !== undefined && (compSize.get(comp) ?? 0) > 1;
+          const fill = visited
+            ? "fill-run"
+            : grouped
+              ? COMPONENT_FILL[(comp! - 1) % COMPONENT_FILL.length]
+              : "fill-elevated";
+          const filled = visited || grouped;
           return (
             <g key={node.id}>
               {active && (
@@ -88,29 +118,17 @@ export function MstCanvas({ frame }: { frame: MstFrame | undefined }) {
                 cx={node.x}
                 cy={node.y}
                 r={6.5}
-                className={cn(
-                  "stroke-surface",
-                  visited ? "fill-run" : connected ? "fill-compare" : "fill-elevated",
-                )}
+                className={cn("stroke-surface", fill)}
                 strokeWidth={0.9}
               />
               <text
                 x={node.x}
                 y={node.y + 1.7}
                 textAnchor="middle"
-                className={visited || connected ? "fill-white font-display font-semibold" : "fill-fg font-display font-semibold"}
+                className={cn("font-display font-semibold", filled ? "fill-white" : "fill-fg")}
                 style={{ fontSize: 4.7 }}
               >
                 {node.label}
-              </text>
-              <text
-                x={node.x}
-                y={node.y + 12.5}
-                textAnchor="middle"
-                className="fill-muted font-mono"
-                style={{ fontSize: 3.4 }}
-              >
-                {frame.mode === "kruskal" && frame.components ? `C${frame.components[node.id]}` : visited ? "in" : "out"}
               </text>
             </g>
           );

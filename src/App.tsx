@@ -8,6 +8,8 @@ import { SearchPage } from "@/pages/SearchPage";
 import { PlaygroundPage } from "@/pages/PlaygroundPage";
 import { ProblemsPage } from "@/pages/ProblemsPage";
 import { ProblemPage } from "@/pages/ProblemPage";
+import { NotFoundPage } from "@/pages/NotFoundPage";
+import { ScrollToTop } from "@/components/ScrollToTop";
 import { VisualizersPage } from "@/pages/visualizers/VisualizersPage";
 import { VisualizerDetailPage } from "@/pages/visualizers/VisualizerDetailPage";
 import { SortingPage } from "@/pages/SortingPage";
@@ -30,8 +32,9 @@ export default function App() {
         <Route path="/visualizers/:id" element={<VisualizerDetailPage />} />
         <Route path="/sorting" element={<SortingPage />} />
         <Route path="/pathfinding" element={<PathfindingPage />} />
-        <Route path="*" element={<HomePage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
+      <ScrollToTop />
     </div>
   );
 }

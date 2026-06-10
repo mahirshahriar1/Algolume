@@ -99,6 +99,7 @@ export const hashing = chapter(
         ),
         problem("two-sum"),
         problem("contains-duplicate"),
+        problem("group-anagrams"),
       ],
     ),
   ],

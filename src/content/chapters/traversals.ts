@@ -1,4 +1,4 @@
-import { callout, chapter, derive, heading, lesson, prose, step, viz } from "../builder";
+import { callout, chapter, derive, heading, lesson, problem, prose, step, viz } from "../builder";
 
 export const traversals = chapter(
   "traversals",
@@ -94,6 +94,9 @@ export const traversals = chapter(
           "intuition",
           "Same tree, four orders, four different sequences. The traversal order is not decoration; it controls when information becomes available.",
         ),
+        problem("inorder-traversal"),
+        problem("level-order-traversal"),
+        problem("zigzag-traversal"),
       ],
     ),
     lesson(
