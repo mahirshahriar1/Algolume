@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Bold, Italic, Code, SquareCode, List, Heading, Check, Eye, NotebookPen, Pencil } from "lucide-react";
 import { MarkdownLite } from "./MarkdownLite";
+import { getNote, setNote, subscribeNotes } from "@/lib/notesStore";
 import { cn } from "@/lib/cn";
 
 /**
@@ -9,37 +10,41 @@ import { cn } from "@/lib/cn";
  * a live preview toggle. Notes render `inline code` and ```fenced blocks```.
  */
 export function LessonNotes({ lessonKey }: { lessonKey: string }) {
-  const storageKey = `algolume-notes:${lessonKey}`;
   const [value, setValue] = useState("");
   const [saved, setSaved] = useState(true);
   const [preview, setPreview] = useState(false);
   const timer = useRef<number | null>(null);
   const taRef = useRef<HTMLTextAreaElement | null>(null);
+  const savedRef = useRef(true);
+  savedRef.current = saved;
 
   useEffect(() => {
-    try {
-      setValue(localStorage.getItem(storageKey) ?? "");
-    } catch {
-      setValue("");
-    }
+    setValue(getNote(lessonKey));
     setSaved(true);
     setPreview(false);
-  }, [storageKey]);
+  }, [lessonKey]);
+
+  // If the note changes underneath us (e.g. cloud sync merged a newer version)
+  // and we're not mid-edit, pick it up.
+  useEffect(() => {
+    return subscribeNotes(() => {
+      if (savedRef.current) {
+        const fresh = getNote(lessonKey);
+        setValue((v) => (v === fresh ? v : fresh));
+      }
+    });
+  }, [lessonKey]);
 
   useEffect(() => {
     if (timer.current) window.clearTimeout(timer.current);
     timer.current = window.setTimeout(() => {
-      try {
-        localStorage.setItem(storageKey, value);
-        setSaved(true);
-      } catch {
-        /* ignore */
-      }
+      setNote(lessonKey, value);
+      setSaved(true);
     }, 400);
     return () => {
       if (timer.current) window.clearTimeout(timer.current);
     };
-  }, [value, storageKey]);
+  }, [value, lessonKey]);
 
   const setCaret = (start: number, end = start) =>
     requestAnimationFrame(() => {

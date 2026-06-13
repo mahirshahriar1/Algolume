@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Github, Linkedin, Search, Menu, X } from "lucide-react";
+import { Github, Linkedin, Search, Menu, X, MessageSquarePlus } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 import { CommandPalette } from "./CommandPalette";
 import { ShortcutsHelp } from "./ShortcutsHelp";
+import { AccountMenu, SyncStatusLine } from "./AccountMenu";
+import { initAuth, useAuth, signInWithGoogle } from "@/lib/auth";
+import { isSupabaseConfigured } from "@/lib/supabase";
 
 const REPO_URL = "https://github.com/mahirshahriar1/Algolume";
 const LINKEDIN_URL = "https://www.linkedin.com/in/mahir-shahriar-tamim/";
@@ -15,6 +18,7 @@ const NAV = [
   { to: "/visualizers", label: "Visualizers" },
   { to: "/playground", label: "Playground" },
   { to: "/problems", label: "Problems" },
+  { to: "/notes", label: "Notes" },
 ];
 
 export function Navbar() {
@@ -22,6 +26,12 @@ export function Navbar() {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const { user } = useAuth();
+
+  // Resolve the auth session + start cloud sync once (no-op without Supabase env).
+  useEffect(() => {
+    initAuth();
+  }, []);
 
   // Global shortcuts: ⌘/Ctrl-K opens the switcher; "?" opens shortcut help
   // (ignored while typing in a field).
@@ -99,7 +109,16 @@ export function Navbar() {
               <Search className="h-5 w-5" />
             </button>
 
+            <Link
+              to="/issue"
+              className={cn("btn-icon", pathname.startsWith("/issue") && "bg-elevated text-fg")}
+              aria-label="Submit an issue"
+              title="Submit an issue / feedback"
+            >
+              <MessageSquarePlus className="h-5 w-5" />
+            </Link>
             <ThemeToggle />
+            <AccountMenu />
             <a
               href={LINKEDIN_URL}
               target="_blank"
@@ -150,9 +169,18 @@ export function Navbar() {
                   </Link>
                 );
               })}
-              <Link to="/notes" className="rounded-lg px-3 py-2.5 text-sm font-medium text-muted hover:bg-elevated/60 hover:text-fg">
-                Notes
+              <Link to="/issue" className="rounded-lg px-3 py-2.5 text-sm font-medium text-muted hover:bg-elevated/60 hover:text-fg">
+                Submit an issue
               </Link>
+              {isSupabaseConfigured && !user && (
+                <button
+                  onClick={() => signInWithGoogle()}
+                  className="mt-1 flex items-center gap-2 rounded-lg border border-line bg-elevated/60 px-3 py-2.5 text-sm font-medium text-fg"
+                >
+                  Sign in with Google
+                </button>
+              )}
+              <SyncStatusLine />
               <div className="mt-1 flex items-center gap-2 border-t border-line pt-2">
                 <a href={LINKEDIN_URL} target="_blank" rel="noreferrer" className="btn-icon" aria-label="LinkedIn">
                   <Linkedin className="h-5 w-5" />

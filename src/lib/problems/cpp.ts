@@ -926,4 +926,200 @@ long long ncr_mod(long long n, long long r, long long p) {
 }
 `,
   },
+  "activity-selection": {
+    cppSolution: `int max_activities(vector<vector<int>> intervals) {
+    sort(intervals.begin(), intervals.end(),
+         [](auto& a, auto& b){ return a[1] < b[1]; });
+    int count = 0, last = INT_MIN;
+    for (auto& iv : intervals)
+        if (iv[0] >= last) { count++; last = iv[1]; }
+    return count;
+}
+`,
+  },
+  "jump-game": {
+    cppSolution: `bool can_jump(vector<int> nums) {
+    int reach = 0;
+    for (int i = 0; i < (int)nums.size(); i++) {
+        if (i > reach) return false;
+        reach = max(reach, i + nums[i]);
+    }
+    return true;
+}
+`,
+  },
+  "min-arrows": {
+    cppSolution: `int min_arrows(vector<vector<int>> points) {
+    if (points.empty()) return 0;
+    sort(points.begin(), points.end(),
+         [](auto& a, auto& b){ return a[1] < b[1]; });
+    int arrows = 1, end = points[0][1];
+    for (auto& p : points)
+        if (p[0] > end) { arrows++; end = p[1]; }
+    return arrows;
+}
+`,
+  },
+  "max-product-subarray": {
+    cppSolution: `int max_product_subarray(vector<int> nums) {
+    int best = nums[0], curMax = nums[0], curMin = nums[0];
+    for (int i = 1; i < (int)nums.size(); i++) {
+        int x = nums[i];
+        if (x < 0) swap(curMax, curMin);
+        curMax = max(x, curMax * x);
+        curMin = min(x, curMin * x);
+        best = max(best, curMax);
+    }
+    return best;
+}
+`,
+  },
+  "str-str": {
+    cppSolution: `int str_str(string haystack, string needle) {
+    if (needle.empty()) return 0;
+    size_t pos = haystack.find(needle);   // or implement KMP
+    return pos == string::npos ? -1 : (int)pos;
+}
+`,
+  },
+  "count-occurrences": {
+    cppSolution: `int count_occurrences(string text, string pattern) {
+    if (pattern.empty()) return 0;
+    int count = 0;
+    size_t i = 0;
+    while ((i = text.find(pattern, i)) != string::npos) {
+        count++; i++;           // +1 so overlaps are counted
+    }
+    return count;
+}
+`,
+  },
+  "longest-happy-prefix": {
+    cppSolution: `string longest_happy_prefix(string s) {
+    int n = s.size();
+    if (n == 0) return "";
+    vector<int> pi(n, 0);
+    for (int i = 1, k = 0; i < n; i++) {
+        while (k > 0 && s[i] != s[k]) k = pi[k - 1];
+        if (s[i] == s[k]) k++;
+        pi[i] = k;
+    }
+    return s.substr(0, pi[n - 1]);
+}
+`,
+  },
+  "count-components": {
+    cppSolution: `int count_components(int n, vector<vector<int>> edges) {
+    vector<int> parent(n);
+    iota(parent.begin(), parent.end(), 0);
+    function<int(int)> find = [&](int x){ while (parent[x]!=x){ parent[x]=parent[parent[x]]; x=parent[x]; } return x; };
+    int count = n;
+    for (auto& e : edges) {
+        int ra = find(e[0]), rb = find(e[1]);
+        if (ra != rb) { parent[ra] = rb; count--; }
+    }
+    return count;
+}
+`,
+  },
+  "course-schedule": {
+    cppSolution: `bool course_schedule(int n, vector<vector<int>> prerequisites) {
+    vector<vector<int>> g(n);
+    vector<int> indeg(n, 0);
+    for (auto& p : prerequisites) { g[p[1]].push_back(p[0]); indeg[p[0]]++; }
+    queue<int> q;
+    for (int i = 0; i < n; i++) if (!indeg[i]) q.push(i);
+    int seen = 0;
+    while (!q.empty()) {
+        int u = q.front(); q.pop(); seen++;
+        for (int v : g[u]) if (--indeg[v] == 0) q.push(v);
+    }
+    return seen == n;
+}
+`,
+  },
+  "topo-order": {
+    cppSolution: `vector<int> topo_order(int n, vector<vector<int>> edges) {
+    vector<vector<int>> g(n);
+    vector<int> indeg(n, 0);
+    for (auto& e : edges) { g[e[0]].push_back(e[1]); indeg[e[1]]++; }
+    priority_queue<int, vector<int>, greater<int>> pq;   // min-heap → lexicographically smallest
+    for (int i = 0; i < n; i++) if (!indeg[i]) pq.push(i);
+    vector<int> out;
+    while (!pq.empty()) {
+        int u = pq.top(); pq.pop(); out.push_back(u);
+        for (int v : g[u]) if (--indeg[v] == 0) pq.push(v);
+    }
+    return (int)out.size() == n ? out : vector<int>{};
+}
+`,
+  },
+  "my-pow": {
+    cppSolution: `double my_pow(double x, long long n) {
+    if (n < 0) { x = 1 / x; n = -n; }
+    double result = 1.0;
+    while (n) {
+        if (n & 1) result *= x;
+        x *= x; n >>= 1;
+    }
+    return result;
+}
+`,
+  },
+  "majority-element": {
+    cppSolution: `int majority_element(vector<int> nums) {
+    int count = 0, candidate = 0;
+    for (int x : nums) {
+        if (count == 0) candidate = x;
+        count += (x == candidate) ? 1 : -1;
+    }
+    return candidate;
+}
+`,
+  },
+  "count-primes": {
+    cppSolution: `int count_primes(int n) {
+    if (n < 3) return 0;
+    vector<bool> sieve(n, true);
+    sieve[0] = sieve[1] = false;
+    for (long long p = 2; p * p < n; p++)
+        if (sieve[p])
+            for (long long q = p * p; q < n; q += p)
+                sieve[q] = false;
+    return count(sieve.begin(), sieve.end(), true);
+}
+`,
+  },
+  "nim-winner": {
+    cppSolution: `bool nim_winner(vector<int> piles) {
+    int x = 0;
+    for (int p : piles) x ^= p;
+    return x != 0;          // first player wins iff nim-sum != 0
+}
+`,
+  },
+  "subtraction-game": {
+    cppSolution: `bool can_win_subtraction(int n, vector<int> moves) {
+    vector<char> win(n + 1, false);
+    for (int i = 1; i <= n; i++)
+        for (int m : moves)
+            if (m <= i && !win[i - m]) { win[i] = true; break; }
+    return win[n];
+}
+`,
+  },
+  "grundy-number": {
+    cppSolution: `int grundy_number(int n, vector<int> moves) {
+    vector<int> g(n + 1, 0);
+    for (int i = 1; i <= n; i++) {
+        set<int> reachable;
+        for (int m : moves) if (m <= i) reachable.insert(g[i - m]);
+        int mex = 0;
+        while (reachable.count(mex)) mex++;
+        g[i] = mex;
+    }
+    return g[n];
+}
+`,
+  },
 };

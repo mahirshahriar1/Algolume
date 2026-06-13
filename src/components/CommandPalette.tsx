@@ -31,6 +31,7 @@ function buildItems(): Item[] {
     { label: "Problems", sub: "Practice with hidden tests", to: "/problems", kind: "Page" },
     { label: "Notes", sub: "Your saved notes", to: "/notes", kind: "Page" },
     { label: "Search", sub: "Full-text search", to: "/search", kind: "Page" },
+    { label: "Submit an issue", sub: "Report a bug or idea", to: "/issue", kind: "Page" },
   ];
   const lessons: Item[] = ALL_LESSONS.map((r) => ({
     label: r.lesson.title,

@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 import {
-  ArrowLeft, ArrowRight, BarChart3, Binary, BookOpen, Check, Clock, Compass, Gauge, GitBranch,
+  ArrowLeft, ArrowRight, BarChart3, Binary, BookOpen, CalendarRange, Check, Clock, Compass, Dices, Gauge, GitBranch,
   Grid3x3, Hash, Layers, ListTree, MonitorPlay, Network, Play, Repeat, RotateCcw, Rows3,
-  Search, Sigma, Spline, Terminal, Triangle, type LucideIcon,
+  Search, Sigma, Spline, Terminal, Triangle, Type, type LucideIcon,
 } from "lucide-react";
 import { CHAPTERS, LESSON_COUNT, TOTAL_MINUTES } from "@/content";
 import type { Chapter, Lesson } from "@/content/types";
@@ -10,7 +10,7 @@ import { lessonKey, useCompleted } from "@/lib/progress";
 import { cn } from "@/lib/cn";
 
 const ICONS: Record<string, LucideIcon> = {
-  Compass, Rows3, Search, BarChart3, Repeat, Spline, Layers, Hash, GitBranch, ListTree, Network, Terminal, Triangle, Grid3x3, Binary, Sigma, Gauge,
+  Compass, Rows3, Search, BarChart3, Repeat, Spline, Layers, Hash, GitBranch, ListTree, Network, Terminal, Triangle, Grid3x3, Binary, Sigma, Gauge, CalendarRange, Type, Dices,
 };
 
 /** Categorise a lesson by what it contains, for its branch icon. */

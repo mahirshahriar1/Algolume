@@ -10,11 +10,16 @@ import { hashing } from "./chapters/hashing";
 import { trees } from "./chapters/trees";
 import { traversals } from "./chapters/traversals";
 import { heaps } from "./chapters/heaps";
+import { graphs } from "./chapters/graphs";
 import { pathfinding } from "./chapters/pathfinding";
 import { minimumSpanningTrees } from "./chapters/minimum-spanning-trees";
+import { greedy } from "./chapters/greedy";
+import { divideAndConquer } from "./chapters/divide-and-conquer";
 import { dynamicProgramming } from "./chapters/dynamic-programming";
+import { strings } from "./chapters/strings";
 import { bitManipulation } from "./chapters/bit-manipulation";
 import { mathForAlgorithms } from "./chapters/math";
+import { gameTheory } from "./chapters/game-theory";
 import { npHardness } from "./chapters/np-hardness";
 import { competitiveProgramming } from "./chapters/competitive-programming";
 
@@ -34,10 +39,15 @@ export const CHAPTERS: Chapter[] = [
   trees,
   traversals,
   heaps,
+  graphs,
   pathfinding,
   minimumSpanningTrees,
+  greedy,
+  divideAndConquer,
   dynamicProgramming,
+  strings,
   mathForAlgorithms,
+  gameTheory,
 ];
 
 export interface LessonRef {

@@ -10,6 +10,14 @@ import { DpSim } from "@/components/sim/DpSim";
 import type { DpMode } from "@/lib/sims/dp";
 import { BitsSim } from "@/components/sim/BitsSim";
 import type { BitOp } from "@/lib/sims/bits";
+import { GreedySim } from "@/components/sim/GreedySim";
+import { KadaneSim } from "@/components/sim/KadaneSim";
+import { KnapsackSim } from "@/components/sim/KnapsackSim";
+import { MatchSim } from "@/components/sim/MatchSim";
+import type { MatchMode } from "@/lib/sims/matching";
+import { SieveSim } from "@/components/sim/SieveSim";
+import { GameSim } from "@/components/sim/GameSim";
+import type { GameMode } from "@/lib/sims/game";
 import { HashSim } from "@/components/sim/HashSim";
 import { RecursionSim } from "@/components/sim/RecursionSim";
 import { ShortestPathSim } from "@/components/sim/ShortestPathSim";
@@ -45,6 +53,14 @@ function Body({
   if (module === "heap") return <HeapSim />;
   if (module === "dp") return <DpSim variant={(variant as DpMode) ?? "coin"} />;
   if (module === "bits") return <BitsSim variant={(variant as BitOp) ?? "and"} />;
+  if (module === "greedy") {
+    if (variant === "kadane") return <KadaneSim />;
+    if (variant === "knapsack") return <KnapsackSim />;
+    return <GreedySim />;
+  }
+  if (module === "matching") return <MatchSim variant={(variant as MatchMode) ?? "naive"} />;
+  if (module === "sieve") return <SieveSim />;
+  if (module === "game-theory") return <GameSim variant={(variant as GameMode) ?? "wl"} />;
   if (module === "dsu") return <DsuSim />;
   if (module === "bellman-ford") return <ShortestPathSim variant="bellman-ford" />;
   if (module === "floyd-warshall") return <ShortestPathSim variant="floyd-warshall" />;

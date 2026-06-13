@@ -14,6 +14,11 @@ import { heapProblems } from "./sets/heaps";
 import { dpProblems } from "./sets/dp";
 import { bitProblems } from "./sets/bit-manipulation";
 import { mathProblems } from "./sets/math";
+import { greedyProblems } from "./sets/greedy";
+import { stringMatchingProblems } from "./sets/string-matching";
+import { graphProblems } from "./sets/graphs";
+import { divideConquerProblems } from "./sets/divide-conquer";
+import { gameTheoryProblems } from "./sets/game-theory";
 import { mstProblems } from "./sets/mst";
 import { CPP_SNIPPETS } from "./cpp";
 
@@ -36,6 +41,11 @@ export const PROBLEMS: Problem[] = [
   ...dpProblems,
   ...bitProblems,
   ...mathProblems,
+  ...greedyProblems,
+  ...stringMatchingProblems,
+  ...graphProblems,
+  ...divideConquerProblems,
+  ...gameTheoryProblems,
   ...mstProblems,
 ].map((problem) => ({ ...problem, ...CPP_SNIPPETS[problem.id] }));
 
@@ -78,6 +88,11 @@ export const TOPIC_LABEL: Record<string, string> = {
   "dynamic-programming": "Dynamic programming",
   "bit-manipulation": "Bit manipulation",
   math: "Math for algorithms",
+  greedy: "Greedy algorithms",
+  strings: "Strings & pattern matching",
+  graphs: "Graphs",
+  "divide-and-conquer": "Divide & conquer",
+  "game-theory": "Game theory",
   "linked-lists": "Linked lists",
   pathfinding: "Pathfinding",
   "minimum-spanning-trees": "Minimum spanning trees",

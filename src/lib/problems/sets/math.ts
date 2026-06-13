@@ -39,6 +39,52 @@ Euclid's insight: any common divisor of \`a\` and \`b\` also divides \`a mod b\`
     tags: ["math", "number theory", "euclid"],
   },
   {
+    id: "count-primes",
+    title: "Count Primes",
+    topic: "math",
+    difficulty: "medium",
+    summary: "How many primes are strictly less than n? — the sieve.",
+    statement: `Return the number of prime numbers **strictly less than** \`n\`. Trial-dividing
+each number is slow; the **Sieve of Eratosthenes** marks composites in
+\`O(n log log n)\`.`,
+    funcName: "count_primes",
+    starter: `def count_primes(n):
+    # Number of primes strictly less than n
+    pass
+`,
+    examples: [
+      { input: [10], expected: 4, explain: "2, 3, 5, 7." },
+      { input: [2], expected: 0 },
+    ],
+    tests: [
+      { input: [0], expected: 0 },
+      { input: [3], expected: 1 },
+      { input: [20], expected: 8 },
+      { input: [100], expected: 25 },
+    ],
+    hints: [
+      "Make a boolean array is_prime[0..n-1], all true except 0 and 1.",
+      "For each prime p (while p² < n), cross out p², p²+p, … as composite.",
+      "Count the entries still marked prime.",
+    ],
+    solution: `def count_primes(n):
+    if n < 3:
+        return 0
+    sieve = [True] * n
+    sieve[0] = sieve[1] = False
+    p = 2
+    while p * p < n:
+        if sieve[p]:
+            for q in range(p * p, n, p):
+                sieve[q] = False
+        p += 1
+    return sum(sieve)
+`,
+    complexity: { time: "O(n log log n)", space: "O(n)" },
+    lesson: "/learn/math/primes-combinatorics",
+    tags: ["math", "sieve", "primes"],
+  },
+  {
     id: "mod-pow",
     title: "Modular Exponentiation",
     topic: "math",

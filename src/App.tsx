@@ -9,6 +9,7 @@ import { PlaygroundPage } from "@/pages/PlaygroundPage";
 import { ProblemsPage } from "@/pages/ProblemsPage";
 import { ProblemPage } from "@/pages/ProblemPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
+import { IssuePage } from "@/pages/IssuePage";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { VisualizersPage } from "@/pages/visualizers/VisualizersPage";
 import { VisualizerDetailPage } from "@/pages/visualizers/VisualizerDetailPage";
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/learn/:chapterId/:lessonId" element={<LessonPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/notes" element={<NotesPage />} />
+        <Route path="/issue" element={<IssuePage />} />
         <Route path="/playground" element={<PlaygroundPage />} />
         <Route path="/problems" element={<ProblemsPage />} />
         <Route path="/problems/:id" element={<ProblemPage />} />

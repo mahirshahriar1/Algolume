@@ -39,6 +39,23 @@ import {
 } from "@/lib/sims/bits";
 import { BitsCanvas } from "./BitsCanvas";
 import {
+  buildActivitySelection, parseIntervals, intervalsToText, GREEDY_CODE, GREEDY_LIMITS, GREEDY_SAMPLE,
+  type RawInterval,
+} from "@/lib/sims/greedy";
+import { GreedyCanvas } from "./GreedyCanvas";
+import { buildKadaneFrames, KADANE_CODE } from "@/lib/sims/kadane";
+import { KadaneCanvas } from "./KadaneCanvas";
+import {
+  buildKnapsackFrames, parseItems, itemsToText, KNAPSACK_CODE, KNAPSACK_LIMITS, KNAPSACK_SAMPLE,
+} from "@/lib/sims/knapsack";
+import { KnapsackCanvas } from "./KnapsackCanvas";
+import { buildMatchFrames, matchCode, MATCH_LIMITS, type MatchMode } from "@/lib/sims/matching";
+import { MatchCanvas } from "./MatchCanvas";
+import { buildSieveFrames, SIEVE_CODE, SIEVE_LIMITS } from "@/lib/sims/sieve";
+import { SieveCanvas } from "./SieveCanvas";
+import { buildGameFrames, gameCode, GAME_LIMITS, type GameMode } from "@/lib/sims/game";
+import { GameCanvas } from "./GameCanvas";
+import {
   buildBacktrackingFrames,
   buildDivideFrames,
   buildFactorialFrames,
@@ -1385,6 +1402,399 @@ export function ShortestPathViz({ complexity, lesson }: Meta) {
       ]}
       canvas={<ShortestPathCanvas frame={player.current} />}
     />
+  );
+}
+
+/* ---- Greedy: interval scheduling ------------------------------------------ */
+
+export function GreedyViz({ complexity, lesson }: Meta) {
+  const [text, setText] = useState(() => intervalsToText(GREEDY_SAMPLE));
+  const [seed, setSeed] = useState(0);
+  const { intervals, errors } = useMemo(() => parseIntervals(text), [text]);
+  const frames = useMemo(() => buildActivitySelection(intervals.length ? intervals : GREEDY_SAMPLE), [intervals]);
+  const player = usePlayer(frames, 2, true, true);
+
+  const randomize = () => {
+    // deterministic-ish shuffle of times (no Math.random in the builder itself)
+    const n = 6;
+    const next: RawInterval[] = Array.from({ length: n }, (_, i) => {
+      const s = (i * 3 + seed * 2) % (GREEDY_LIMITS.maxTime - 4);
+      const len = 2 + ((i * 5 + seed) % 5);
+      return { start: s, end: Math.min(GREEDY_LIMITS.maxTime, s + len) };
+    });
+    setText(intervalsToText(next));
+    setSeed((x) => x + 1);
+  };
+
+  const controls = (
+    <Controls title="Activity selection">
+      <label className="block space-y-1.5">
+        <span className="text-xs font-semibold uppercase tracking-wider text-subtle">
+          Activities <span className="font-normal normal-case text-subtle">(start end)</span>
+        </span>
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          rows={7}
+          spellCheck={false}
+          className="w-full resize-none rounded-lg border border-line bg-surface px-3 py-2 font-mono text-xs text-fg
+            placeholder:text-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-run/50"
+        />
+        {errors.length > 0 ? (
+          <span className="block text-[11px] leading-4 text-swap">{errors[0]}</span>
+        ) : (
+          <span className="block text-[11px] leading-4 text-subtle">
+            Up to {GREEDY_LIMITS.maxIntervals} activities; times 0–{GREEDY_LIMITS.maxTime}.
+          </span>
+        )}
+      </label>
+      <OpButton onClick={randomize} icon={<Shuffle className="h-4 w-4" />}>Random activities</OpButton>
+      <p className="rounded-lg bg-elevated px-3 py-2 text-xs leading-5 text-muted">
+        Greedy rule: always take the next activity that <strong>finishes earliest</strong> and
+        doesn't overlap what you've picked. It provably maximises the count.
+      </p>
+    </Controls>
+  );
+
+  return (
+    <VizShell3
+      player={player}
+      code={GREEDY_CODE}
+      complexity={complexity}
+      lesson={lesson}
+      controls={controls}
+      stats={player.current?.stats ?? []}
+      canvas={<GreedyCanvas frame={player.current} />}
+    />
+  );
+}
+
+/* ---- Sieve of Eratosthenes ------------------------------------------------ */
+
+export function SieveViz({ complexity, lesson }: Meta) {
+  const [n, setN] = useState(30);
+  const frames = useMemo(() => buildSieveFrames(n), [n]);
+  const player = usePlayer(frames, 3, true, true);
+
+  const controls = (
+    <Controls title="Sieve of Eratosthenes">
+      <label className="block space-y-1.5">
+        <span className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-subtle">
+          <span>Up to n</span><span className="font-mono text-run">{n}</span>
+        </span>
+        <input type="range" min={SIEVE_LIMITS.min} max={SIEVE_LIMITS.max} value={n} onChange={(e) => setN(+e.target.value)} className="w-full accent-run" />
+      </label>
+      <p className="rounded-lg bg-elevated px-3 py-2 text-xs leading-5 text-muted">
+        For each prime <span className="font-mono">p</span>, cross out its multiples starting at
+        <span className="font-mono"> p²</span> (smaller multiples were already crossed by smaller
+        primes). Whatever survives is prime.
+      </p>
+    </Controls>
+  );
+
+  return (
+    <VizShell3
+      player={player}
+      code={SIEVE_CODE}
+      complexity={complexity}
+      lesson={lesson}
+      controls={controls}
+      stats={player.current?.stats ?? []}
+      canvas={<SieveCanvas frame={player.current} />}
+    />
+  );
+}
+
+/* ---- Game theory: subtraction game (W/L + Grundy) ------------------------- */
+
+export function GameViz({ complexity, lesson }: Meta) {
+  const [mode, setMode] = useState<GameMode>("wl");
+  const [n, setN] = useState(16);
+  const [movesRaw, setMovesRaw] = useState("1, 2");
+  const moves = useMemo(() => {
+    const m = movesRaw.split(/[\s,]+/).map((x) => parseInt(x, 10)).filter((v) => v > 0).slice(0, 5);
+    return m.length ? m : [1, 2];
+  }, [movesRaw]);
+  const frames = useMemo(() => buildGameFrames(mode, n, moves), [mode, n, moves]);
+  const player = usePlayer(frames, 2, true, true);
+
+  const controls = (
+    <Controls title="Subtraction game">
+      <div className="grid grid-cols-2 gap-1.5">
+        {(["wl", "grundy"] as GameMode[]).map((m) => (
+          <button
+            key={m}
+            onClick={() => setMode(m)}
+            className={cn(
+              "rounded-lg px-2.5 py-2 text-xs font-semibold transition-colors duration-150 cursor-pointer",
+              m === mode ? "bg-run/15 text-fg ring-1 ring-run/40" : "bg-elevated text-muted hover:bg-line/60",
+            )}
+          >
+            {m === "wl" ? "Win / Lose" : "Grundy"}
+          </button>
+        ))}
+      </div>
+      <label className="block space-y-1.5">
+        <span className="text-xs font-semibold uppercase tracking-wider text-subtle">Allowed moves</span>
+        <input
+          value={movesRaw}
+          onChange={(e) => setMovesRaw(e.target.value)}
+          className="h-9 w-full rounded-lg border border-line bg-surface px-3 font-mono text-sm text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-run/50"
+        />
+      </label>
+      <label className="block space-y-1.5">
+        <span className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-subtle">
+          <span>Positions (n)</span><span className="font-mono text-run">{n}</span>
+        </span>
+        <input type="range" min={GAME_LIMITS.min} max={GAME_LIMITS.max} value={n} onChange={(e) => setN(+e.target.value)} className="w-full accent-run" />
+      </label>
+      <p className="rounded-lg bg-elevated px-3 py-2 text-xs leading-5 text-muted">
+        Remove a stone count in <span className="font-mono">moves</span>; last to move wins. A
+        position is <strong>Losing</strong> if every move leads to a Winning one. Grundy = mex of
+        reachable Grundy values (0 ⟺ losing).
+      </p>
+    </Controls>
+  );
+
+  return (
+    <VizShell3
+      player={player}
+      code={gameCode(mode)}
+      complexity={complexity}
+      lesson={lesson}
+      controls={controls}
+      stats={[{ label: "Mode", value: mode === "wl" ? "W/L" : "Grundy" }, ...(player.current?.stats ?? [])]}
+      canvas={<GameCanvas frame={player.current} />}
+    />
+  );
+}
+
+/* ---- String pattern matching ---------------------------------------------- */
+
+const MATCH_MODES: [MatchMode, string, string][] = [
+  ["naive", "Naive", "Slide the pattern one step on any mismatch — O(n·m)."],
+  ["kmp", "KMP", "Skip ahead using the failure function — O(n + m)."],
+];
+
+export function MatchViz({ complexity, lesson }: Meta) {
+  const [mode, setMode] = useState<MatchMode>("naive");
+  const [text, setText] = useState("abxabcabcaby");
+  const [pattern, setPattern] = useState("abcaby");
+  const clean = (v: string) => v.replace(/\s+/g, "");
+  const frames = useMemo(() => buildMatchFrames(mode, text, pattern), [mode, text, pattern]);
+  const player = usePlayer(frames, 2, true, true);
+
+  const controls = (
+    <Controls title="Pattern matching">
+      <div className="grid gap-1.5">
+        {MATCH_MODES.map(([id, label, desc]) => (
+          <button
+            key={id}
+            onClick={() => setMode(id)}
+            className={cn(
+              "rounded-lg px-3 py-2 text-left transition-colors duration-150 cursor-pointer",
+              id === mode ? "bg-run/15 text-fg ring-1 ring-run/40" : "bg-elevated text-muted hover:bg-line/60",
+            )}
+          >
+            <span className="block text-sm font-semibold">{label}</span>
+            <span className="block text-[11px] leading-4 text-subtle">{desc}</span>
+          </button>
+        ))}
+      </div>
+      <label className="block space-y-1.5">
+        <span className="text-xs font-semibold uppercase tracking-wider text-subtle">Text</span>
+        <input
+          value={text}
+          onChange={(e) => setText(clean(e.target.value).slice(0, MATCH_LIMITS.maxText))}
+          className="h-9 w-full rounded-lg border border-line bg-surface px-3 font-mono text-sm text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-run/50"
+        />
+      </label>
+      <label className="block space-y-1.5">
+        <span className="text-xs font-semibold uppercase tracking-wider text-subtle">Pattern</span>
+        <input
+          value={pattern}
+          onChange={(e) => setPattern(clean(e.target.value).slice(0, MATCH_LIMITS.maxPattern))}
+          className="h-9 w-full rounded-lg border border-line bg-surface px-3 font-mono text-sm text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-run/50"
+        />
+      </label>
+      <p className="rounded-lg bg-elevated px-3 py-2 text-xs leading-5 text-muted">
+        Watch comparisons align the pattern against the text. KMP reuses the matched
+        prefix to avoid re-checking characters.
+      </p>
+    </Controls>
+  );
+
+  return (
+    <VizShell3
+      player={player}
+      code={matchCode(mode)}
+      complexity={complexity}
+      lesson={lesson}
+      controls={controls}
+      stats={[{ label: "Mode", value: mode.toUpperCase() }, ...(player.current?.stats ?? [])]}
+      canvas={<MatchCanvas frame={player.current} />}
+    />
+  );
+}
+
+/* ---- Greedy: Kadane's maximum subarray ------------------------------------ */
+
+export function KadaneViz({ complexity, lesson }: Meta) {
+  const [raw, setRaw] = useState("-2, 1, -3, 4, -1, 2, 1, -5, 4");
+  const [seed, setSeed] = useState(0);
+  const values = useMemo(() => {
+    void seed;
+    const nums = raw.split(/[\s,]+/).map((x) => parseInt(x, 10)).filter((n) => Number.isFinite(n)).slice(0, 14);
+    return nums.length ? nums : [-2, 1, -3, 4, -1, 2, 1, -5, 4];
+  }, [raw, seed]);
+  const frames = useMemo(() => buildKadaneFrames(values), [values]);
+  const player = usePlayer(frames, 2, true, true);
+
+  const randomize = () => {
+    const next = Array.from({ length: 9 }, (_, i) => ((i * 7 + seed * 3) % 13) - 6);
+    setRaw(next.join(", "));
+    setSeed((s) => s + 1);
+  };
+
+  const controls = (
+    <Controls title="Kadane's algorithm">
+      <label className="block space-y-1.5">
+        <span className="text-xs font-semibold uppercase tracking-wider text-subtle">Array</span>
+        <textarea
+          value={raw}
+          onChange={(e) => setRaw(e.target.value)}
+          rows={3}
+          className="w-full resize-none rounded-lg border border-line bg-surface px-3 py-2 font-mono text-xs text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-run/50"
+        />
+      </label>
+      <OpButton onClick={randomize} icon={<Shuffle className="h-4 w-4" />}>Random array</OpButton>
+      <p className="rounded-lg bg-elevated px-3 py-2 text-xs leading-5 text-muted">
+        At each element, greedily choose: <strong>restart</strong> here, or <strong>extend</strong> the
+        running sum. Keep the best window ever seen.
+      </p>
+    </Controls>
+  );
+
+  return (
+    <VizShell3
+      player={player}
+      code={KADANE_CODE}
+      complexity={complexity}
+      lesson={lesson}
+      controls={controls}
+      stats={player.current?.stats ?? []}
+      canvas={<KadaneCanvas frame={player.current} />}
+    />
+  );
+}
+
+/* ---- Greedy: fractional knapsack ------------------------------------------ */
+
+export function KnapsackViz({ complexity, lesson }: Meta) {
+  const [text, setText] = useState(() => itemsToText(KNAPSACK_SAMPLE));
+  const [capacity, setCapacity] = useState(50);
+  const [seed, setSeed] = useState(0);
+  const { items, errors } = useMemo(() => parseItems(text), [text]);
+  const frames = useMemo(() => buildKnapsackFrames(items.length ? items : KNAPSACK_SAMPLE, capacity), [items, capacity]);
+  const player = usePlayer(frames, 2, true, true);
+
+  const randomize = () => {
+    const next = Array.from({ length: 4 }, (_, i) => ({
+      weight: 5 + ((i * 7 + seed * 3) % 20),
+      value: 20 + ((i * 11 + seed * 5) % 90),
+    }));
+    setText(itemsToText(next));
+    setSeed((s) => s + 1);
+  };
+
+  const controls = (
+    <Controls title="Fractional knapsack">
+      <label className="block space-y-1.5">
+        <span className="text-xs font-semibold uppercase tracking-wider text-subtle">
+          Items <span className="font-normal normal-case text-subtle">(weight value)</span>
+        </span>
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          rows={5}
+          spellCheck={false}
+          className="w-full resize-none rounded-lg border border-line bg-surface px-3 py-2 font-mono text-xs text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-run/50"
+        />
+        {errors.length > 0 ? (
+          <span className="block text-[11px] leading-4 text-swap">{errors[0]}</span>
+        ) : (
+          <span className="block text-[11px] leading-4 text-subtle">Up to {KNAPSACK_LIMITS.maxItems} items.</span>
+        )}
+      </label>
+      <label className="block space-y-1.5">
+        <span className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-subtle">
+          <span>Capacity</span><span className="font-mono text-run">{capacity}</span>
+        </span>
+        <input type="range" min={5} max={80} value={capacity} onChange={(e) => setCapacity(+e.target.value)} className="w-full accent-run" />
+      </label>
+      <OpButton onClick={randomize} icon={<Shuffle className="h-4 w-4" />}>Random items</OpButton>
+      <p className="rounded-lg bg-elevated px-3 py-2 text-xs leading-5 text-muted">
+        Greedy by <strong>value/weight</strong>: take the best ratio first, splitting the last
+        item to fill the bag. Optimal for the <em>fractional</em> version.
+      </p>
+    </Controls>
+  );
+
+  return (
+    <VizShell3
+      player={player}
+      code={KNAPSACK_CODE}
+      complexity={complexity}
+      lesson={lesson}
+      controls={controls}
+      stats={player.current?.stats ?? []}
+      canvas={<KnapsackCanvas frame={player.current} />}
+    />
+  );
+}
+
+/* ---- Greedy lab: one card, three greedy classics -------------------------- */
+
+type GreedyTab = "activity" | "kadane" | "knapsack";
+
+const GREEDY_TABS: { id: GreedyTab; label: string; lesson: string; complexity: { label: string; value: string }[] }[] = [
+  { id: "activity", label: "Activity selection", lesson: "/learn/greedy/greedy-intro", complexity: [{ label: "Sort", value: "O(n log n)" }, { label: "Scan", value: "O(n)" }] },
+  { id: "kadane", label: "Kadane (max subarray)", lesson: "/learn/greedy/kadane", complexity: [{ label: "Time", value: "O(n)" }, { label: "Space", value: "O(1)" }] },
+  { id: "knapsack", label: "Fractional knapsack", lesson: "/learn/greedy/greedy-classics", complexity: [{ label: "Sort", value: "O(n log n)" }, { label: "Fill", value: "O(n)" }] },
+];
+
+const GREEDY_TAB_BY_ID: Record<string, GreedyTab> = {
+  greedy: "activity",
+  activity: "activity",
+  kadane: "kadane",
+  knapsack: "knapsack",
+};
+
+export function GreedyLab({ initial }: { initial?: string }) {
+  const [tab, setTab] = useState<GreedyTab>(GREEDY_TAB_BY_ID[initial ?? ""] ?? "activity");
+  const active = GREEDY_TABS.find((t) => t.id === tab)!;
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl border border-line bg-surface p-1.5">
+        <div className="grid grid-cols-3 gap-1.5">
+          {GREEDY_TABS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={cn(
+                "rounded-lg px-3 py-2 text-sm font-semibold transition-colors duration-150 cursor-pointer",
+                t.id === tab ? "bg-run/15 text-fg ring-1 ring-run/40" : "text-muted hover:bg-elevated",
+              )}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      {tab === "activity" && <GreedyViz complexity={active.complexity} lesson={active.lesson} />}
+      {tab === "kadane" && <KadaneViz complexity={active.complexity} lesson={active.lesson} />}
+      {tab === "knapsack" && <KnapsackViz complexity={active.complexity} lesson={active.lesson} />}
+    </div>
   );
 }
 

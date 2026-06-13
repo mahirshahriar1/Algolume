@@ -1,17 +1,20 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Download, NotebookPen, Trash2, ArrowRight, BookOpen, Search, RotateCcw } from "lucide-react";
-import { getAllNotes, noteKeyFor } from "@/lib/notesStore";
+import { getAllNotes, removeNote } from "@/lib/notesStore";
 import { getLesson } from "@/content";
 import { MarkdownLite } from "@/components/lesson/MarkdownLite";
 import { clearAllProgress, useCompleted } from "@/lib/progress";
 import { clearAllSolved, useSolved } from "@/lib/problems/solved";
+import { isSupabaseConfigured } from "@/lib/supabase";
+import { useAuth } from "@/lib/auth";
 
 export function NotesPage() {
   const [tick, setTick] = useState(0);
   const [query, setQuery] = useState("");
   const completed = useCompleted();
   const solved = useSolved();
+  const { user } = useAuth();
   const allNotes = useMemo(() => {
     void tick; // re-read after edits/deletes
     return getAllNotes().map((n) => {
@@ -29,11 +32,7 @@ export function NotesPage() {
     : allNotes;
 
   const remove = (lessonKey: string) => {
-    try {
-      localStorage.removeItem(noteKeyFor(lessonKey));
-    } catch {
-      /* ignore */
-    }
+    removeNote(lessonKey);
     setTick((t) => t + 1);
   };
 
@@ -70,6 +69,7 @@ export function NotesPage() {
           </h1>
           <p className="mt-3 text-muted">
             {allNotes.length} note{allNotes.length === 1 ? "" : "s"}, saved on this device as you read.
+            {isSupabaseConfigured && !user && " Sign in to sync them across devices."}
           </p>
         </div>
         {allNotes.length > 0 && (

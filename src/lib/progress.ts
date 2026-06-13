@@ -49,10 +49,24 @@ export function clearAllProgress() {
   persist();
 }
 
+/** Snapshot of completed lesson keys (used by cloud sync). */
+export function getCompletedKeys(): string[] {
+  return [...completed];
+}
+
+/** Replace the completed set (used when applying a merged cloud state). */
+export function setCompletedKeys(keys: string[]) {
+  completed = new Set(keys);
+  persist();
+}
+
 function subscribe(cb: () => void): () => void {
   listeners.add(cb);
   return () => listeners.delete(cb);
 }
+
+/** Subscribe to completion changes (used by cloud sync). */
+export const subscribeProgress = subscribe;
 
 /** Reactive set of completed lesson keys. */
 export function useCompleted(): Set<string> {

@@ -1,11 +1,11 @@
 import {
-  BarChart3, Binary, GitBranch, Grid3x3, Hash, Layers, ListRestart, ListTree, Network, Rows3, Search, Spline,
-  Triangle,
+  BarChart3, Binary, CalendarRange, Dices, GitBranch, Grid3x3, Hash, Layers, ListRestart, ListTree, Network, Rows3, Search, Sigma, Spline,
+  Triangle, Type,
   type LucideIcon,
 } from "lucide-react";
 import {
   InteractiveSeq, InteractiveHash, ArrayViz, SearchingViz, RecursionViz, TraversalViz,
-  TreesViz, GraphAlgosViz, HeapViz, DpViz, BitsViz,
+  TreesViz, GraphAlgosViz, HeapViz, DpViz, BitsViz, GreedyLab, MatchViz, SieveViz, GameViz,
 } from "@/components/sim/Interactive";
 
 export interface VizEntry {
@@ -142,6 +142,46 @@ export const VISUALIZERS: VizEntry[] = [
     lesson: "/learn/pathfinding/search-a-grid",
   },
   {
+    id: "sieve",
+    title: "Sieve of Eratosthenes",
+    blurb: "Cross out composites: for each prime p, strike its multiples from p². What survives is prime.",
+    icon: Sigma,
+    accent: "text-run",
+    lesson: "/learn/math/primes-combinatorics",
+    complexity: [{ label: "Time", value: "n log log n" }, { label: "Space", value: "O(n)" }],
+    Component: (e) => <SieveViz complexity={e.complexity} lesson={e.lesson} />,
+  },
+  {
+    id: "game-theory",
+    title: "Game theory (Nim / Grundy)",
+    blurb: "Subtraction game: compute Win/Lose positions and Grundy numbers bottom-up from the terminal state.",
+    icon: Dices,
+    accent: "text-pivot",
+    lesson: "/learn/game-theory/game-basics",
+    complexity: [{ label: "W/L", value: "O(n·k)" }, { label: "Grundy", value: "O(n·k)" }, { label: "Nim", value: "O(piles)" }],
+    Component: (e) => <GameViz complexity={e.complexity} lesson={e.lesson} />,
+  },
+  {
+    id: "matching",
+    title: "String pattern matching",
+    blurb: "Slide a pattern across text — naive vs KMP. Watch comparisons, mismatches, and KMP's failure-function skips.",
+    icon: Type,
+    accent: "text-compare",
+    lesson: "/learn/strings/pattern-matching",
+    complexity: [{ label: "Naive", value: "O(n·m)" }, { label: "KMP", value: "O(n+m)" }, { label: "Space", value: "O(m)" }],
+    Component: (e) => <MatchViz complexity={e.complexity} lesson={e.lesson} />,
+  },
+  {
+    id: "greedy",
+    title: "Greedy algorithms",
+    blurb: "Three classics in one lab: activity selection (interval timeline), Kadane's max subarray, and fractional knapsack.",
+    icon: CalendarRange,
+    accent: "text-run",
+    lesson: "/learn/greedy/greedy-intro",
+    complexity: [{ label: "Activity", value: "n log n" }, { label: "Kadane", value: "O(n)" }, { label: "Knapsack", value: "n log n" }],
+    Component: (_e, id) => <GreedyLab initial={id} />,
+  },
+  {
     id: "bits",
     title: "Bit manipulation",
     blurb: "AND/OR/XOR/NOT, shifts, and the x & -x / x & (x-1) tricks — applied bit by bit on 8-bit binary with place values.",
@@ -189,4 +229,7 @@ export const VIZ_BY_ID = {
   prim: BASE_VIZ_BY_ID.graphs,
   dsu: BASE_VIZ_BY_ID.graphs,
   "union-find": BASE_VIZ_BY_ID.graphs,
+  kadane: BASE_VIZ_BY_ID.greedy,
+  knapsack: BASE_VIZ_BY_ID.greedy,
+  "activity-selection": BASE_VIZ_BY_ID.greedy,
 } as Record<string, VizEntry>;

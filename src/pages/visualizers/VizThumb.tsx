@@ -176,6 +176,59 @@ export function VizThumb({ id }: { id: string }) {
           </g>
         </svg>
       );
+    case "sieve":
+      return (
+        <svg viewBox="0 0 96 56" className={wrap}>
+          <g fill="currentColor">
+            {Array.from({ length: 18 }, (_, i) => {
+              const prime = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29].includes(i + 2);
+              return (
+                <rect key={i} x={8 + (i % 6) * 14} y={8 + Math.floor(i / 6) * 14} width="11" height="11" rx="2" opacity={prime ? 0.9 : 0.25} />
+              );
+            })}
+          </g>
+        </svg>
+      );
+    case "game-theory":
+      return (
+        <svg viewBox="0 0 96 56" className={wrap}>
+          <g fill="currentColor">
+            {["L", "W", "W", "L", "W", "W"].map((s, i) => (
+              <g key={i}>
+                <rect x={8 + i * 14} y={20} width="11" height="14" rx="2" opacity={s === "L" ? 0.3 : 0.85} />
+              </g>
+            ))}
+          </g>
+        </svg>
+      );
+    case "matching":
+      return (
+        <svg viewBox="0 0 96 56" className={wrap}>
+          <g fill="currentColor">
+            {[0, 1, 2, 3, 4, 5, 6, 7].map((c) => (
+              <rect key={`t${c}`} x={8 + c * 11} y={12} width="9" height="11" rx="2" opacity={c >= 2 && c <= 4 ? 0.95 : 0.3} />
+            ))}
+            {[0, 1, 2].map((c) => (
+              <rect key={`p${c}`} x={30 + c * 11} y={32} width="9" height="11" rx="2" opacity="0.7" />
+            ))}
+          </g>
+        </svg>
+      );
+    case "greedy":
+      return (
+        <svg viewBox="0 0 96 56" className={wrap}>
+          <g>
+            {[
+              [10, 10, 34, 0.55],
+              [40, 22, 30, 0.95],
+              [16, 34, 28, 0.3],
+              [54, 46, 30, 0.95],
+            ].map(([x, y, w, op], i) => (
+              <rect key={i} x={x} y={y} width={w} height="8" rx="3" className="fill-current" opacity={op as number} />
+            ))}
+          </g>
+        </svg>
+      );
     case "bits":
       return (
         <svg viewBox="0 0 96 56" className={wrap}>

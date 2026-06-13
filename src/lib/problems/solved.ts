@@ -52,10 +52,24 @@ export function clearAllSolved() {
   persist();
 }
 
+/** Snapshot of solved problem ids (used by cloud sync). */
+export function getSolvedIds(): string[] {
+  return [...solved];
+}
+
+/** Replace the solved set (used when applying a merged cloud state). */
+export function setSolvedIds(ids: string[]) {
+  solved = new Set(ids);
+  persist();
+}
+
 function subscribe(cb: () => void): () => void {
   listeners.add(cb);
   return () => listeners.delete(cb);
 }
+
+/** Subscribe to solved-state changes (used by cloud sync). */
+export const subscribeSolved = subscribe;
 
 /** Reactive set of solved problem ids. */
 export function useSolved(): Set<string> {
