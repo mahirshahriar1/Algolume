@@ -11,6 +11,7 @@ import { ProblemPage } from "@/pages/ProblemPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { IssuePage } from "@/pages/IssuePage";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { ScrollReset } from "@/components/ScrollReset";
 import { VisualizersPage } from "@/pages/visualizers/VisualizersPage";
 import { VisualizerDetailPage } from "@/pages/visualizers/VisualizerDetailPage";
 import { SortingPage } from "@/pages/SortingPage";
@@ -19,6 +20,7 @@ import { PathfindingPage } from "@/pages/PathfindingPage";
 export default function App() {
   return (
     <div className="min-h-screen bg-base">
+      <ScrollReset />
       <Navbar />
       <Routes>
         <Route path="/" element={<HomePage />} />

@@ -58,19 +58,34 @@ export function Navbar() {
     setMobileOpen(false);
   }, [pathname]);
 
+  // Add depth to the header once the page is scrolled.
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 4);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
     <>
-      <header className="sticky top-0 z-30 border-b border-line/50 bg-base/80 backdrop-blur-md">
+      <header
+        className={cn(
+          "sticky top-0 z-30 border-b backdrop-blur-md transition-[box-shadow,background-color,border-color] duration-200",
+          scrolled ? "border-line bg-base/90 shadow-sm" : "border-line/50 bg-base/75",
+        )}
+      >
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-          <Link to="/" className="flex items-center gap-2.5 group">
-            <Logo className="h-8 w-8" />
+          <Link to="/" className="group flex items-center gap-2.5">
+            <Logo className="h-8 w-8 transition-transform duration-200 group-hover:scale-105" />
             <span className="font-display text-xl font-semibold tracking-tight">
               Algo<span className="text-run">lume</span>
             </span>
           </Link>
 
           <nav className="flex items-center gap-1">
-            <div className="hidden items-center gap-1 md:flex">
+            {/* Desktop links — full-height with an animated active underline. */}
+            <div className="hidden h-16 items-stretch md:flex">
               {NAV.map((item) => {
                 const active = pathname.startsWith(item.to);
                 return (
@@ -78,18 +93,22 @@ export function Navbar() {
                     key={item.to}
                     to={item.to}
                     className={cn(
-                      "rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200",
-                      active
-                        ? "bg-elevated text-fg"
-                        : "text-muted hover:text-fg hover:bg-elevated/60",
+                      "relative flex items-center px-3.5 text-sm font-medium transition-colors duration-200",
+                      active ? "text-fg" : "text-muted hover:text-fg",
                     )}
                   >
                     {item.label}
+                    <span
+                      className={cn(
+                        "absolute inset-x-3 bottom-0 h-[2.5px] rounded-t-full bg-run transition-all duration-200",
+                        active ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0",
+                      )}
+                    />
                   </Link>
                 );
               })}
             </div>
-            <span className="mx-1 hidden h-5 w-px bg-line md:block" aria-hidden="true" />
+            <span className="mx-2 hidden h-5 w-px bg-line md:block" aria-hidden="true" />
 
             {/* Quick switcher (⌘K) */}
             <button
@@ -118,25 +137,18 @@ export function Navbar() {
               <MessageSquarePlus className="h-5 w-5" />
             </Link>
             <ThemeToggle />
-            <AccountMenu />
-            <a
-              href={LINKEDIN_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="btn-icon hidden sm:inline-flex"
-              aria-label="Author's LinkedIn"
-            >
-              <Linkedin className="h-5 w-5" />
-            </a>
             <a
               href={REPO_URL}
               target="_blank"
               rel="noreferrer"
               className="btn-icon hidden sm:inline-flex"
               aria-label="GitHub repository"
+              title="GitHub"
             >
               <Github className="h-5 w-5" />
             </a>
+            <span className="mx-0.5 hidden h-5 w-px bg-line sm:block" aria-hidden="true" />
+            <AccountMenu />
 
             {/* Mobile menu toggle */}
             <button
