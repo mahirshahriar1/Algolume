@@ -1,5 +1,7 @@
 # Algolume
 
+![Algolume demo](demo.gif)
+
 Algolume is a **local-first, no-signup interactive handbook** for data structures
 and algorithms. One project lets you **Read** book-quality lessons, **Watch**
 live frame-by-frame visualizers, **Play** with real Python in the browser,
