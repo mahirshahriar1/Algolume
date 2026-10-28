@@ -10,7 +10,7 @@ One page lets you **Read** (lessons), **Watch** (live frame-by-frame sims),
 
 ```bash
 npm run dev       # Vite dev server
-npm run build     # tsc -b && vite build  ← the gate; must stay green
+npm run build     # tsc -b && vite build && prerender  ← the gate; must stay green
 npm run preview
 ```
 
@@ -41,11 +41,22 @@ timestamps] → push, then debounced push on local change; `useSyncStatus`).
 The three stores expose `get*/set*/subscribe*` for the sync layer; never bypass
 them when writing progress/solved/notes.
 
+## SEO / AEO (prerender)
+
+It's an SPA, so `scripts/prerender.mjs` runs after `vite build` and writes a
+static `dist/<route>/index.html` for every indexable route (real `<title>`, meta,
+canonical, JSON-LD, readable content inside `#root` that React replaces on mount),
+plus `sitemap.xml`, `robots.txt`, `llms.txt`, `llms-full.txt`. Route metadata lives
+in `lib/seo.ts` (`metaFor`, `indexablePaths`; also used live by
+`components/PageMeta`); static HTML/markdown rendering in `lib/seoStatic.ts`. New
+lessons/problems/visualizers are picked up automatically; a **new top-level route**
+needs an entry in `metaFor` + `indexablePaths`. Site URL: `SITE_URL` in `seo.ts`.
+
 ## Rules (always)
 
 1. **Build green** before a chunk is done. The `LessonBlock` switches in
-   `searchIndex.ts` and `BlockRenderer.tsx` are exhaustive — add a `case` for new
-   block kinds.
+   `searchIndex.ts`, `BlockRenderer.tsx` and `seoStatic.ts` are exhaustive — add a
+   `case` for new block kinds.
 2. **Light *and* dark.** Never hardcode colors — use semantic tokens
    (`bg-surface`, `text-muted`, `text-run`, …; CSS vars in `index.css`). Light is
    default. Use `cn()` for conditional classes.
